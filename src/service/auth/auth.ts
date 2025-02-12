@@ -14,7 +14,7 @@ export const signUp = async (input: SignUpInput): Promise<any> => {
   const config: AxiosRequestConfig = {
     url: "/api/auth/register",
     method: "POST",
-    data: { input },
+    data: input,
   };
   return apiRequest<any>(config);
 };
