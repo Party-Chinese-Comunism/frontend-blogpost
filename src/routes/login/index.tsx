@@ -1,10 +1,14 @@
-import * as React from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import CssBaseline from "@mui/material/CssBaseline";
 import Stack from "@mui/material/Stack";
-import Content from "./components/Content";
-import LoginCard from "./components/LoginCard";
+import Content from "./-components/Content";
+import LoginCard from "./-components/LoginCard";
 
-export default function Login(props: { disableCustomTheme?: boolean }) {
+export const Route = createFileRoute("/login/")({
+  component: RouteComponent,
+});
+
+function RouteComponent() {
   return (
     <>
       <CssBaseline enableColorScheme />
