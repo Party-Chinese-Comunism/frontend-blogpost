@@ -1,67 +1,67 @@
-import * as React from 'react'
+import * as React from "react";
 import {
   createFileRoute,
   redirect,
   useRouter,
   useRouterState,
-} from '@tanstack/react-router'
-import { z } from 'zod'
-import { useAuth } from '../context/auth'
-
+} from "@tanstack/react-router";
+import { z } from "zod";
+import { useAuth } from "../context/auth";
+import Login from "../pages/Login/Login";
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-const fallback = '/' as const
+const fallback = "/" as const;
 
-export const Route = createFileRoute('/login')({
+export const Route = createFileRoute("/login")({
   validateSearch: z.object({
-    redirect: z.string().optional().catch(''),
+    redirect: z.string().optional().catch(""),
   }),
   beforeLoad: ({ context, search }) => {
     if (context.auth.isAuthenticated) {
-      throw redirect({ to: search.redirect || fallback })
+      throw redirect({ to: search.redirect || fallback });
     }
   },
   component: LoginComponent,
-})
+});
 
 function LoginComponent() {
-  const auth = useAuth()
-  const router = useRouter()
-  const isLoading = useRouterState({ select: (s) => s.isLoading })
-  const navigate = Route.useNavigate()
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const auth = useAuth();
+  const router = useRouter();
+  const isLoading = useRouterState({ select: (s) => s.isLoading });
+  const navigate = Route.useNavigate();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const search = Route.useSearch()
+  const search = Route.useSearch();
   async function sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
   const onFormSubmit = async (evt: React.FormEvent<HTMLFormElement>) => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      evt.preventDefault()
-      const data = new FormData(evt.currentTarget)
-      const fieldValue = data.get('username')
+      evt.preventDefault();
+      const data = new FormData(evt.currentTarget);
+      const fieldValue = data.get("username");
 
-      if (!fieldValue) return
-      const username = fieldValue.toString()
-      await auth.login(username)
+      if (!fieldValue) return;
+      const username = fieldValue.toString();
+      await auth.login(username);
 
-      await router.invalidate()
+      await router.invalidate();
 
-      await sleep(1)
+      await sleep(1);
 
-      await navigate({ to: search.redirect || fallback })
+      await navigate({ to: search.redirect || fallback });
     } catch (error) {
-      console.error('Error logging in: ', error)
+      console.error("Error logging in: ", error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const isLoggingIn = isLoading || isSubmitting
+  const isLoggingIn = isLoading || isSubmitting;
 
   return (
-    <div className="p-2 grid gap-2 place-items-center">
+    /*     <div className="p-2 grid gap-2 place-items-center">
       <h3 className="text-xl">Login page</h3>
       {search.redirect ? (
         <p className="text-red-500">You need to login to access this page.</p>
@@ -91,6 +91,7 @@ function LoginComponent() {
           </button>
         </fieldset>
       </form>
-    </div>
-  )
+    </div> */
+    <Login />
+  );
 }
