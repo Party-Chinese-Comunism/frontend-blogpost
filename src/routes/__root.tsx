@@ -134,7 +134,7 @@ function RootComponent() {
               ) : (
                 <Box display={"flex"} gap={2}>
                   <Button component={Link} to="/login" color="inherit">
-                    Sign in
+                    Entrar
                   </Button>
                   <Button
                     variant="outlined"
@@ -142,7 +142,7 @@ function RootComponent() {
                     to="/register"
                     color="inherit"
                   >
-                    Sign up
+                    Cadastrar
                   </Button>
                 </Box>
               )}

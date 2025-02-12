@@ -33,7 +33,6 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider theme={theme}>
-
         <InnerApp />
       </ThemeProvider>
     </AuthProvider>
