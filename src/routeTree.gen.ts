@@ -12,9 +12,9 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as RegisterImport } from './routes/register'
-import { Route as LoginImport } from './routes/login'
 import { Route as AuthImport } from './routes/_auth'
 import { Route as IndexImport } from './routes/index'
+import { Route as LoginIndexImport } from './routes/login/index'
 import { Route as AuthNewPostImport } from './routes/_auth.new-post'
 import { Route as AuthMyPostsImport } from './routes/_auth.my-posts'
 import { Route as AuthFavoritesImport } from './routes/_auth.favorites'
@@ -27,12 +27,6 @@ const RegisterRoute = RegisterImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const LoginRoute = LoginImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const AuthRoute = AuthImport.update({
   id: '/_auth',
   getParentRoute: () => rootRoute,
@@ -41,6 +35,12 @@ const AuthRoute = AuthImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LoginIndexRoute = LoginIndexImport.update({
+  id: '/login/',
+  path: '/login/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -80,13 +80,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthImport
       parentRoute: typeof rootRoute
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginImport
-      parentRoute: typeof rootRoute
-    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -115,6 +108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthNewPostImport
       parentRoute: typeof AuthImport
     }
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -137,32 +137,32 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof AuthRouteWithChildren
-  '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/favorites': typeof AuthFavoritesRoute
   '/my-posts': typeof AuthMyPostsRoute
   '/new-post': typeof AuthNewPostRoute
+  '/login': typeof LoginIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof AuthRouteWithChildren
-  '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/favorites': typeof AuthFavoritesRoute
   '/my-posts': typeof AuthMyPostsRoute
   '/new-post': typeof AuthNewPostRoute
+  '/login': typeof LoginIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteWithChildren
-  '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/_auth/favorites': typeof AuthFavoritesRoute
   '/_auth/my-posts': typeof AuthMyPostsRoute
   '/_auth/new-post': typeof AuthNewPostRoute
+  '/login/': typeof LoginIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -170,44 +170,44 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | ''
-    | '/login'
     | '/register'
     | '/favorites'
     | '/my-posts'
     | '/new-post'
+    | '/login'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | ''
-    | '/login'
     | '/register'
     | '/favorites'
     | '/my-posts'
     | '/new-post'
+    | '/login'
   id:
     | '__root__'
     | '/'
     | '/_auth'
-    | '/login'
     | '/register'
     | '/_auth/favorites'
     | '/_auth/my-posts'
     | '/_auth/new-post'
+    | '/login/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
-  LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  LoginIndexRoute: typeof LoginIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
-  LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  LoginIndexRoute: LoginIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -222,8 +222,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/_auth",
-        "/login",
-        "/register"
+        "/register",
+        "/login/"
       ]
     },
     "/": {
@@ -236,9 +236,6 @@ export const routeTree = rootRoute
         "/_auth/my-posts",
         "/_auth/new-post"
       ]
-    },
-    "/login": {
-      "filePath": "login.tsx"
     },
     "/register": {
       "filePath": "register.tsx"
@@ -254,6 +251,9 @@ export const routeTree = rootRoute
     "/_auth/new-post": {
       "filePath": "_auth.new-post.tsx",
       "parent": "/_auth"
+    },
+    "/login/": {
+      "filePath": "login/index.tsx"
     }
   }
 }
