@@ -6,6 +6,7 @@ import { routeTree } from "./routeTree.gen";
 import { useAuth, AuthProvider } from "./context/auth";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SnackbarProvider } from "./context/snackbarContext";
 
 // Set up a Router instance
 const router = createRouter({
@@ -36,7 +37,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <AuthProvider>
-          <InnerApp />
+          <SnackbarProvider>
+            <InnerApp />
+          </SnackbarProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
