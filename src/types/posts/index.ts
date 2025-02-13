@@ -26,7 +26,7 @@ export type Post = {
   profile_image: string;
   comments: {
     id: number;
-    name: string;
+    username: string;
     content: string;
     user?: { profile_image?: string };
   }[];

@@ -41,3 +41,21 @@ export const getAllPosts = async (): Promise<ListMyPostsResponse> => {
 
   return apiRequestWithoutToken<ListMyPostsResponse>(config);
 };
+
+type CreateComment = {
+  postId: number;
+  content: string;
+};
+
+export const createComment = async (input: CreateComment): Promise<any> => {
+  const config: AxiosRequestConfig = {
+    url: `/api/comments/create`,
+    method: "POST",
+    data: { content: input.content, post_id: input.postId },
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  return apiRequestWithToken<any>(config);
+};
