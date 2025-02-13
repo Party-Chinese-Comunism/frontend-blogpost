@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from "axios";
-import { apiRequestWithToken } from "../../config/api";
+import { apiRequestWithoutToken, apiRequestWithToken } from "../../config/api";
 import { CreatePostInput, ListMyPostsResponse } from "../../types/posts";
 
 export const createPost = async (input: CreatePostInput): Promise<any> => {
@@ -31,4 +31,13 @@ export const listMyPosts = async (): Promise<ListMyPostsResponse> => {
   };
 
   return apiRequestWithToken<ListMyPostsResponse>(config);
+};
+
+export const getAllPosts = async (): Promise<ListMyPostsResponse> => {
+  const config: AxiosRequestConfig = {
+    url: "/api/posts/list",
+    method: "GET",
+  };
+
+  return apiRequestWithoutToken<ListMyPostsResponse>(config);
 };

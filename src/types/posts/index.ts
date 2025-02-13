@@ -12,4 +12,22 @@ export type ListMyPostsResponse = {
   image_url: string;
   title: string;
   user_id: number;
+  profile_image:string;
 }[];
+
+
+export type Post = {
+  id: number;
+  author: string;
+  title: string;
+  description: string;
+  image_url: string;
+  user_id: number;
+  profile_image: string;
+  comments: {
+    id: number;
+    name: string;
+    content: string;
+    user?: { profile_image?: string };
+  }[];
+};
