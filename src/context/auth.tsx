@@ -18,20 +18,20 @@ const AuthContext = React.createContext<AuthContextValue | null>(null);
 
 const LOCALSTORAGE_KEY = "user";
 
+export function storeAuthData(data: AuthData) {
+  if (data.token || data.user) {
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(data));
+  } else {
+    localStorage.removeItem(LOCALSTORAGE_KEY);
+  }
+}
+
 function loadAuthData(): AuthData {
   try {
     const stored = localStorage.getItem(LOCALSTORAGE_KEY);
     return stored ? JSON.parse(stored) : { token: null, user: null };
   } catch {
     return { token: null, user: null };
-  }
-}
-
-function storeAuthData(data: AuthData) {
-  if (data.token || data.user) {
-    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(data));
-  } else {
-    localStorage.removeItem(LOCALSTORAGE_KEY);
   }
 }
 
@@ -51,11 +51,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = React.useCallback(async () => {
     storeAuthData({ token: null, user: null });
     setAuthData({ token: null, user: null });
+    window.location.href = "/";
   }, []);
 
   React.useEffect(() => {
-    setAuthData(loadAuthData());
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === LOCALSTORAGE_KEY) {
+        setAuthData(loadAuthData());
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
+
+  React.useEffect(() => {
+    const data = loadAuthData();
+    if (!data.token && authData.token) {
+      logout();
+    }
+  }, [authData.token, logout]);
 
   return (
     <AuthContext.Provider
