@@ -9,7 +9,7 @@ import {
 
 export const signIn = async (input: SignInInput): Promise<SignInResponse> => {
   const config: AxiosRequestConfig = {
-    url: "/api/auth/login",
+    url: "/api/login",
     method: "POST",
     data: input,
   };
@@ -17,7 +17,7 @@ export const signIn = async (input: SignInInput): Promise<SignInResponse> => {
 };
 export const signUp = async (input: SignUpInput): Promise<SignUpResponse> => {
   const config: AxiosRequestConfig = {
-    url: "/api/auth/register",
+    url: "/api/register",
     method: "POST",
     data: input,
   };
