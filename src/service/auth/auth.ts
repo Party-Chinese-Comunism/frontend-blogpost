@@ -1,20 +1,25 @@
 import { AxiosRequestConfig } from "axios";
-import { apiRequest } from "../../config/api";
-import { SignInInput, SignUpInput } from "../../types/auth";
+import { apiRequestWithoutToken } from "../../config/api";
+import {
+  SignInInput,
+  SignInResponse,
+  SignUpInput,
+  SignUpResponse,
+} from "../../types/auth";
 
-export const signIn = async (input: SignInInput): Promise<any> => {
+export const signIn = async (input: SignInInput): Promise<SignInResponse> => {
   const config: AxiosRequestConfig = {
     url: "/api/auth/login",
     method: "POST",
-    data: { input },
+    data: input,
   };
-  return apiRequest<any>(config);
+  return apiRequestWithoutToken<SignInResponse>(config);
 };
-export const signUp = async (input: SignUpInput): Promise<any> => {
+export const signUp = async (input: SignUpInput): Promise<SignUpResponse> => {
   const config: AxiosRequestConfig = {
     url: "/api/auth/register",
     method: "POST",
     data: input,
   };
-  return apiRequest<any>(config);
+  return apiRequestWithoutToken<SignUpResponse>(config);
 };

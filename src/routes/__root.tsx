@@ -22,16 +22,16 @@ import {
   useMediaQuery,
   Theme,
 } from "@mui/material";
-import { AuthContext, useAuth } from "../context/auth";
+import { AuthContextValue, useAuth } from "../context/auth";
 import MenuIcon from "@mui/icons-material/Menu";
+import { getDecryptedToken } from "../utils/encryption";
 interface MyRouterContext {
-  auth: AuthContext;
+  auth: AuthContextValue;
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: RootComponent,
 });
-
 function RootComponent() {
   const auth = useAuth();
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -110,21 +110,20 @@ function RootComponent() {
             >
               Blog
             </Typography>
-            {!isMobile ||
-              (auth.isAuthenticated && (
-                <Box display={"flex"} gap={3}>
-                  {pages.map(({ label, to }) => (
-                    <Button
-                      key={label}
-                      component={Link}
-                      to={to}
-                      sx={{ my: 2, color: "white", display: "block" }}
-                    >
-                      {label}
-                    </Button>
-                  ))}
-                </Box>
-              ))}
+            {!isMobile && auth.isAuthenticated && (
+              <Box display={"flex"} gap={3}>
+                {pages.map(({ label, to }) => (
+                  <Button
+                    key={label}
+                    component={Link}
+                    to={to}
+                    sx={{ my: 2, color: "white", display: "block" }}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </Box>
+            )}
 
             <>
               {auth.isAuthenticated ? (

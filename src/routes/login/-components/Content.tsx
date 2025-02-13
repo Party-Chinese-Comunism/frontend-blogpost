@@ -10,27 +10,27 @@ import ThumbUpAltRoundedIcon from "@mui/icons-material/ThumbUpAltRounded";
 const items = [
   {
     icon: <SettingsSuggestRoundedIcon sx={{ color: "text.secondary" }} />,
-    title: "Adaptable performance",
+    title: "Desempenho Adaptável",
     description:
-      "Our product effortlessly adjusts to your needs, boosting efficiency and simplifying your tasks.",
+      "Nosso produto se ajusta facilmente às suas necessidades, aumentando a eficiência e simplificando suas tarefas.",
   },
   {
     icon: <ConstructionRoundedIcon sx={{ color: "text.secondary" }} />,
-    title: "Built to last",
+    title: "Construído para Durar",
     description:
-      "Experience unmatched durability that goes above and beyond with lasting investment.",
+      "Experimente durabilidade incomparável que supera expectativas, garantindo um investimento de longa duração.",
   },
   {
     icon: <ThumbUpAltRoundedIcon sx={{ color: "text.secondary" }} />,
-    title: "Great user experience",
+    title: "Excelente Experiência de Uso",
     description:
-      "Integrate our product into your routine with an intuitive and easy-to-use interface.",
+      "Integre nosso produto ao seu dia a dia com uma interface intuitiva e fácil de usar.",
   },
   {
     icon: <AutoFixHighRoundedIcon sx={{ color: "text.secondary" }} />,
-    title: "Innovative functionality",
+    title: "Funcionalidade Inovadora",
     description:
-      "Stay ahead with features that set new standards, addressing your evolving needs better than the rest.",
+      "Mantenha-se à frente com recursos que estabelecem novos padrões, atendendo às suas necessidades em constante evolução.",
   },
 ];
 

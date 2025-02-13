@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
@@ -70,9 +70,14 @@ function RouteComponent() {
       }),
     },
   }));
+  const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<SignUpInput> = (data) => {
-    signUp(data);
+    signUp(data, {
+      onSuccess: () => {
+        navigate({ to: "/login" });
+      },
+    });
   };
 
   return (
@@ -85,7 +90,7 @@ function RouteComponent() {
             variant="h4"
             sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
           >
-            Sign up
+            Cadastrar
           </Typography>
 
           <Box
@@ -124,7 +129,7 @@ function RouteComponent() {
             </FormControl>
 
             <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
+              <FormLabel htmlFor="password">Senha</FormLabel>
               <TextField
                 id="password"
                 placeholder="••••••"
@@ -140,11 +145,6 @@ function RouteComponent() {
                 helperText={errors.password?.message}
               />
             </FormControl>
-
-            <FormControlLabel
-              control={<Checkbox color="primary" />}
-              label="I want to receive updates via email."
-            />
 
             <Button type="submit" fullWidth variant="contained">
               Cadastrar
