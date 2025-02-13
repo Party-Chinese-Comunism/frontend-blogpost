@@ -31,19 +31,22 @@ export const Route = createFileRoute("/")({
 });
 
 function HomeComponent() {
-  const [isFavorite, setIsFavorite] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [selectedPost, setSelectedPost] = useState<any | null>(null);
   const [open, setOpen] = useState(false);
   const [likedComments, setLikedComments] = useState<{ [key: number]: boolean }>({});
+  const [favorites, setFavorites] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     console.log("Dados mockados carregados:", mockData);
     setData(mockData);
   }, []);
 
-  const handleFavoriteClick = () => {
-    setIsFavorite((prev) => !prev);
+  const handleFavoriteClick = (postId: number) => {
+    setFavorites((prev) => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
   };
 
   const handleOpenComments = (post: any) => {
@@ -136,10 +139,14 @@ function HomeComponent() {
                   {item.comments.length > 0 ? `Ver todos os ${item.comments.length} comentários` : "Sem comentários ainda"}
                 </Typography>
               </CardContent>
-              <CardActions>
-                <IconButton onClick={handleFavoriteClick} aria-label="add to favorites">
+              <CardActions sx={{ justifyContent: "flex-start", gap: 1, paddingX: 2, display: "flex", alignItems: "center" }}>
+                <IconButton
+                  onClick={() => handleFavoriteClick(item.id)}
+                  aria-label="add to favorites"
+                  sx={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
                   <AnimatePresence mode="popLayout">
-                    {isFavorite ? (
+                    {favorites[item.id] ? (
                       <motion.div
                         key="favorite"
                         initial={{ scale: 0 }}
@@ -147,7 +154,7 @@ function HomeComponent() {
                         exit={{ scale: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       >
-                        <FavoriteIcon sx={{ color: "red" }} />
+                        <FavoriteIcon sx={{ fontSize: 28, color: "red" }} />
                       </motion.div>
                     ) : (
                       <motion.div
@@ -157,74 +164,155 @@ function HomeComponent() {
                         exit={{ scale: 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       >
-                        <FavoriteBorderIcon />
+                        <FavoriteBorderIcon sx={{ fontSize: 28 }} />
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </IconButton>
-                <IconButton onClick={() => handleOpenComments(item)} aria-label="ver comentários">
-                  <CommentIcon />
+
+                <IconButton
+                  onClick={() => handleOpenComments(item)}
+                  aria-label="ver comentários"
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transform: "translateY(3px)",
+                  }}
+                >
+                  <CommentIcon sx={{ fontSize: 28 }} />
                 </IconButton>
               </CardActions>
+
+
+
+
             </Card>
           </Grid>
         ))}
       </Grid>
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
         {selectedPost && (
-          <Box sx={{ display: "flex", flexDirection: "row", height: "600px" }}>
-            <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "#000" }}>
+          <Box sx={{ display: "flex", flexDirection: "row", height: "700px", padding: 2 }}>
+
+            <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 2 }}>
               <img
                 src={"/src/assets/ourlady.webp"}
                 alt={selectedPost.title}
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  objectFit: "contain",
-                }}
+                style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
               />
-
             </Box>
 
-            <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <Box
+              sx={{
+                width: "2px",
+                backgroundColor: "rgba(0, 0, 0, 0.2)",
+              }}
+            />
+
+            <Box
+              sx={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                padding: 2,
+              }}
+            >
               <DialogTitle>Comentários</DialogTitle>
-              <DialogContent sx={{ flex: 1, overflowY: "auto" }}>
+              <DialogContent
+                sx={{
+                  flex: 1,
+                  overflowY: "auto",
+                  scrollBehavior: "smooth",
+                  scrollbarWidth: "thin",
+                  "&::-webkit-scrollbar": {
+                    width: "6px",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: "rgba(0, 0, 0, 0.3)",
+                    borderRadius: "6px",
+                  },
+                }}
+              >
                 {selectedPost.comments.length > 0 ? (
-                  <List>
+                  <List sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                     {selectedPost.comments.map((comment, idx) => (
                       <ListItem
                         key={idx}
                         alignItems="flex-start"
-                        secondaryAction={
-                          <IconButton onClick={() => handleLikeComment(comment.id)}>
-                            {likedComments[comment.id] ? (
-                              <FavoriteIcon sx={{ color: "red" }} />
-                            ) : (
-                              <FavoriteBorderIcon />
-                            )}
-                          </IconButton>
-                        }
+                        sx={{
+                          position: "relative",
+                          display: "flex",
+                          flexDirection: "row",
+                          alignItems: "flex-start",
+                          paddingY: 1,
+                          borderBottom: "1px solid rgba(0, 0, 0, 0.1)",
+                        }}
                       >
-                        <ListItemAvatar>
+                        <ListItemAvatar sx={{ marginTop: "4px" }}>
                           <Avatar src={comment.user?.profile_image || "https://picsum.photos/100"} />
                         </ListItemAvatar>
+
                         <ListItemText
-                          primary={truncateText(comment.user?.name || "Anônimo", 25)}
-                          secondary={truncateText(comment.content, 100)}
+                          primary={
+                            <Typography variant="subtitle2" fontWeight="bold">
+                              {comment.user?.name || "Anônimo"}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                whiteSpace: "pre-wrap",
+                                wordBreak: "break-word",
+                                maxWidth: "100%",
+                                paddingRight: "50px",
+                              }}
+                            >
+                              {comment.content}
+                            </Typography>
+                          }
                         />
+
+                        <IconButton
+                          onClick={() => handleLikeComment(comment.id)}
+                          sx={{
+                            position: "absolute",
+                            right: 8,
+                            top: 32,
+                            minWidth: "40px",
+                          }}
+                        >
+                          {likedComments[comment.id] ? (
+                            <FavoriteIcon sx={{ color: "red", fontSize: "24px" }} />
+                          ) : (
+                            <FavoriteBorderIcon sx={{ fontSize: "24px" }} />
+                          )}
+                        </IconButton>
                       </ListItem>
                     ))}
                   </List>
                 ) : (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", marginTop: 2 }}>
                     Sem comentários ainda.
                   </Typography>
                 )}
               </DialogContent>
+
+
+
             </Box>
+
           </Box>
         )}
       </Dialog>
+
+
+
+
+
     </>
   );
 }
