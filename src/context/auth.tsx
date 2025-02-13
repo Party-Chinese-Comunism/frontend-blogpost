@@ -1,66 +1,81 @@
-import * as React from 'react'
+import * as React from "react";
+import { UserType } from "../types/auth/user";
 
-
-export interface AuthContext {
-    isAuthenticated: boolean
-    login: (username: string) => Promise<void>
-    logout: () => Promise<void>
-    user: string | null
+interface AuthData {
+  token: string | null;
+  user: UserType | null;
 }
 
-const AuthContext = React.createContext<AuthContext | null>(null)
-
-const key = 'tanstack.auth.user'
-
-function getStoredUser() {
-    return localStorage.getItem(key)
+export interface AuthContextValue {
+  isAuthenticated: boolean;
+  login: (token: string, user: UserType) => Promise<void>;
+  logout: () => Promise<void>;
+  token: string | null;
+  user: UserType | null;
 }
 
-function setStoredUser(user: string | null) {
-    if (user) {
-        localStorage.setItem(key, user)
-    } else {
-        localStorage.removeItem(key)
-    }
+const AuthContext = React.createContext<AuthContextValue | null>(null);
+
+const LOCALSTORAGE_KEY = "user";
+
+function loadAuthData(): AuthData {
+  try {
+    const stored = localStorage.getItem(LOCALSTORAGE_KEY);
+    return stored ? JSON.parse(stored) : { token: null, user: null };
+  } catch {
+    return { token: null, user: null };
+  }
+}
+
+function storeAuthData(data: AuthData) {
+  if (data.token || data.user) {
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(data));
+  } else {
+    localStorage.removeItem(LOCALSTORAGE_KEY);
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = React.useState<string | null>(getStoredUser())
-    const isAuthenticated = !!user
+  const [authData, setAuthData] = React.useState<AuthData>(() =>
+    loadAuthData()
+  );
 
-    async function sleep(ms: number) {
-        return new Promise((resolve) => setTimeout(resolve, ms))
-    }
+  const isAuthenticated = !!authData.token;
 
-    const logout = React.useCallback(async () => {
-        await sleep(250)
+  const login = React.useCallback(async (token: string, user: UserType) => {
+    const newData = { token, user };
+    storeAuthData(newData);
+    setAuthData(newData);
+  }, []);
 
-        setStoredUser(null)
-        setUser(null)
-    }, [])
+  const logout = React.useCallback(async () => {
+    storeAuthData({ token: null, user: null });
+    setAuthData({ token: null, user: null });
+  }, []);
 
-    const login = React.useCallback(async (username: string) => {
-        await sleep(500)
+  React.useEffect(() => {
+    setAuthData(loadAuthData());
+  }, []);
 
-        setStoredUser(username)
-        setUser(username)
-    }, [])
-
-    React.useEffect(() => {
-        setUser(getStoredUser())
-    }, [])
-
-    return (
-        <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    )
+  return (
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        token: authData.token,
+        user: authData.user,
+        login,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-    const context = React.useContext(AuthContext)
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider')
-    }
-    return context
+  const context = React.useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 }
