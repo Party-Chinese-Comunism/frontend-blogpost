@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from "axios";
-import { apiRequestWithoutToken, apiRequestWithToken } from "../../config/api";
+import { apiRequestWithOptionalToken, apiRequestWithoutToken, apiRequestWithToken } from "../../config/api";
 import { CreatePostInput, ListMyPostsResponse } from "../../types/posts";
 
 export const createPost = async (input: CreatePostInput): Promise<any> => {
@@ -39,7 +39,7 @@ export const getAllPosts = async (): Promise<ListMyPostsResponse> => {
     method: "GET",
   };
 
-  return apiRequestWithoutToken<ListMyPostsResponse>(config);
+  return apiRequestWithOptionalToken<ListMyPostsResponse>(config);
 };
 
 type CreateComment = {
@@ -58,4 +58,46 @@ export const createComment = async (input: CreateComment): Promise<any> => {
   };
 
   return apiRequestWithToken<any>(config);
+};
+
+type LikeCommentInput = {
+  commentId: number;
+};
+
+export const likeComment = async (input: LikeCommentInput): Promise<any> => {
+  const config: AxiosRequestConfig = {
+    url: `/api/user/like/${input.commentId}`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  return apiRequestWithToken<any>(config);
+};
+
+type FavoritePostInput = {
+  postId: number;
+};
+
+export const favoritePost = async (input: FavoritePostInput): Promise<any> => {
+  const config: AxiosRequestConfig = {
+    url: `/api/user/favorite/${input.postId}`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  return apiRequestWithToken<any>(config);
+};
+
+
+export const getFavoritePosts = async (): Promise<ListMyPostsResponse> => {
+  const config: AxiosRequestConfig = {
+    url: "/api/user/favorites",
+    method: "GET",
+  };
+
+  return apiRequestWithToken<ListMyPostsResponse>(config);
 };

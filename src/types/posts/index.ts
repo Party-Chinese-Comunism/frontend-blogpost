@@ -5,6 +5,7 @@ export type CreatePostInput = {
 };
 
 export type ListMyPostsResponse = {
+  favorited_by_user: boolean;
   author: string;
   comments: [];
   description: string;
@@ -25,6 +26,8 @@ export type Post = {
   user_id: number;
   profile_image: string;
   comments: {
+    user_image: string;
+    liked_by_user: boolean;
     id: number;
     username: string;
     content: string;
