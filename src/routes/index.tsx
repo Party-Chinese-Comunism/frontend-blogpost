@@ -28,6 +28,9 @@ import { useState } from "react";
 import { useListAllPosts } from "../hooks/usePosts/useListAllPosts";
 import { ListMyPostsResponse, Post } from "../types/posts";
 import { useCreateComment } from "../hooks/usePosts/useCreateComment";
+import noImage from "../assets/no-image.png"
+import { useFavoritePost } from "../hooks/usePosts/useFavoritePost";
+import { useLikeComent } from "../hooks/usePosts/useLikeComent";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -43,8 +46,10 @@ function HomeComponent() {
   }>({});
   const [favorites, setFavorites] = useState<{ [key: number]: boolean }>({});
   const createCommentMutation = useCreateComment();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const currentUsername = user?.user.username || null;
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+  const currentUsername = user?.user?.username || "Anônimo";
+  const favoritePostMutation = useFavoritePost();
 
   const handleAddComment = async () => {
     if (!newComment.trim() || !selectedPost) return;
@@ -57,21 +62,24 @@ function HomeComponent() {
 
           setSelectedPost((prev) => {
             if (!prev) return prev;
+
             return {
               ...prev,
               comments: [
-                ...prev.comments,
+                ...(prev.comments || []),
                 {
-                  id: Date.now(), 
-                  username: currentUsername, 
+                  id: Date.now(),
+                  username: currentUsername,
                   content: newComment,
-                  user: { profile_image: "https://picsum.photos/100" }, 
+                  user_image: "https://picsum.photos/100",
+                  liked_by_user: false,
                 },
               ],
             };
           });
 
-          setNewComment(""); 
+
+          setNewComment("");
         },
         onError: (error) => {
           console.error("Erro ao enviar comentário:", error);
@@ -80,9 +88,20 @@ function HomeComponent() {
     );
   };
 
+
   const handleFavoriteClick = (postId: number) => {
     setFavorites((prev) => ({ ...prev, [postId]: !prev[postId] }));
+
+    favoritePostMutation.mutate(
+      { postId },
+      {
+        onError: () => {
+          setFavorites((prev) => ({ ...prev, [postId]: !prev[postId] }));
+        },
+      }
+    );
   };
+
 
   const handleOpenComments = (post: Post) => {
     setSelectedPost(post);
@@ -94,10 +113,43 @@ function HomeComponent() {
     setSelectedPost(null);
   };
 
-  const handleLikeComment = (commentId: number) => {
-    setLikedComments((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
-  };
+  const likeCommentMutation = useLikeComent();
 
+  const handleLikeComment = (commentId: number) => {
+    setSelectedPost((prev) => {
+      if (!prev) return prev;
+  
+      return {
+        ...prev,
+        comments: prev.comments.map((comment) =>
+          comment.id === commentId
+            ? { ...comment, liked_by_user: !comment.liked_by_user }
+            : comment
+        ),
+      };
+    });
+  
+    likeCommentMutation.mutate(
+      { commentId },
+      {
+        onError: () => {
+          setSelectedPost((prev) => {
+            if (!prev) return prev;
+  
+            return {
+              ...prev,
+              comments: prev.comments.map((comment) =>
+                comment.id === commentId
+                  ? { ...comment, liked_by_user: !comment.liked_by_user }
+                  : comment
+              ),
+            };
+          });
+        },
+      }
+    );
+  };
+  
   const truncateText = (text = "", maxLength: number) => {
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
@@ -105,6 +157,14 @@ function HomeComponent() {
   if (isLoading) return <Typography>Carregando...</Typography>;
   if (isError) return <Typography>Erro ao carregar os posts.</Typography>;
 
+  if (!isLoading && data.length === 0) {
+    return (
+      <Typography variant="h6" align="center" sx={{ marginTop: 4 }}>
+        Não temos posts!
+      </Typography>
+    );
+  }
+  
   return (
     <>
       <Grid
@@ -148,7 +208,7 @@ function HomeComponent() {
               />
               <CardMedia
                 component="img"
-                image="/src/assets/ourlady.webp"
+                image={item.image_url || noImage}
                 sx={{
                   width: "100%",
                   height: "auto",
@@ -195,161 +255,151 @@ function HomeComponent() {
                     : "Sem comentários ainda"}
                 </Typography>
               </CardContent>
-              <CardActions>
-                <IconButton onClick={() => handleFavoriteClick(item.id)}>
-                  {favorites[item.id] ? (
-                    <FavoriteIcon sx={{ color: "red" }} />
-                  ) : (
-                    <FavoriteBorderIcon />
-                  )}
-                </IconButton>
-                <IconButton onClick={() => handleOpenComments(item)}>
-                  <CommentIcon />
-                </IconButton>
-              </CardActions>
+              {user && (
+                <CardActions>
+                  <IconButton onClick={() => handleFavoriteClick(item.id)}>
+                    { item.favorited_by_user ? (
+                      <FavoriteIcon sx={{ color: "red" }} />
+                    ) : (
+                      <FavoriteBorderIcon />
+                    )}
+                  </IconButton>
+
+                  <IconButton onClick={() => handleOpenComments(item)}>
+                    <CommentIcon />
+                  </IconButton>
+                </CardActions>
+              )}
+
             </Card>
           </Grid>
         ))}
       </Grid>
       <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-  {selectedPost && (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: { xs: "column", md: "row" }, 
-        height: "700px", 
-        padding: 2,
-        overflow: "hidden",
-      }}
-    >
-      <Box
-        sx={{
-          flex: "1 1 auto",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 2,
-        }}
-      >
-        <img
-          src="/src/assets/ourlady.webp"
-          style={{
-            maxWidth: "100%",
-            maxHeight: "100%",
-            objectFit: "contain",
-          }}
-        />
-      </Box>
-
-      <Box
-        sx={{
-          width: "2px",
-          backgroundColor: "rgba(0, 0, 0, 0.2)",
-          display: { xs: "none", md: "block" },
-        }}
-      />
-
-      <Box
-        sx={{
-          flex: "1 1 auto",
-          display: "flex",
-          flexDirection: "column",
-          padding: 2,
-          height: "100%",
-        }}
-      >
-        <DialogTitle>Comentários</DialogTitle>
-        <DialogContent
-          sx={{
-            flex: 1,
-            overflowY: "auto", // Permite rolagem apenas na área de comentários
-            scrollbarWidth: "none", // Esconde barra no Firefox
-            "&::-webkit-scrollbar": {
-              display: "none", // Esconde barra no Chrome/Safari
-            },
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-start",
-            paddingBottom: "80px", // Espaço para input não cobrir comentários
-          }}
-        >
-          {selectedPost?.comments.length > 0 ? (
-            <List sx={{ flexGrow: 1 }}>
-              {selectedPost.comments.map((comment, idx) => {
-                const isCurrentUserComment =
-                  comment.username === currentUsername;
-                return (
-                  <ListItem key={idx}>
-                    <ListItemAvatar>
-                      <Avatar
-                        src={
-                          comment.user?.profile_image ||
-                          "https://picsum.photos/100"
-                        }
-                      />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        isCurrentUserComment ? "Você" : comment.username || "Anônimo"
-                      }
-                      secondary={comment.content}
-                    />
-                    <IconButton onClick={() => handleLikeComment(comment.id)}>
-                      {likedComments[comment.id] ? (
-                        <FavoriteIcon sx={{ color: "red" }} />
-                      ) : (
-                        <FavoriteBorderIcon />
-                      )}
-                    </IconButton>
-                  </ListItem>
-                );
-              })}
-            </List>
-          ) : (
-            <Typography
-              variant="body2"
-              sx={{ textAlign: "center", mt: 2, flexGrow: 1 }}
-            >
-              Sem comentários ainda.
-            </Typography>
-          )}
-        </DialogContent>
-
-        {/* Campo de input fixo dentro da área de rolagem */}
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-            backgroundColor: "white",
-            padding: "10px",
-            borderTop: "1px solid rgba(0, 0, 0, 0.1)",
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Escreva um comentário..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-          />
-          <Button
-            variant="contained"
-            onClick={() => {
-              handleAddComment();
+        {selectedPost && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              height: "700px",
+              padding: 2,
+              overflow: "hidden",
             }}
           >
-            Comentar
-          </Button>
-        </Box>
-      </Box>
-    </Box>
-  )}
-</Dialog>
+            <Box
+              sx={{
+                flex: { xs: "1 1 auto", md: "3 3 auto" },
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 2,
+                minHeight: "300px",
+              }}
+            >
+              <img
+                src={selectedPost?.image_url || noImage}
+                style={{
+                  width: "100%",
+                  height: "400px",
+                  maxHeight: "400px",
+                  minHeight: "400px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                }}
+              />
+            </Box>
+
+            <Box
+              sx={{
+                width: "2px",
+                backgroundColor: "rgba(0, 0, 0, 0.2)",
+                display: { xs: "none", md: "block" },
+              }}
+            />
+
+            <Box
+              sx={{
+                flex: { xs: "1 1 auto", md: "2 2 auto" },
+                display: "flex",
+                flexDirection: "column",
+                padding: 2,
+                height: "100%",
+              }}
+            >
+              <DialogTitle>Comentários</DialogTitle>
+              <DialogContent
+                sx={{
+                  flex: 1,
+                  overflowY: "auto",
+                  scrollbarWidth: "none",
+                  "&::-webkit-scrollbar": { display: "none" },
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  paddingBottom: "80px",
+                }}
+              >
+                {selectedPost?.comments.length > 0 ? (
+                  <List sx={{ flexGrow: 1 }}>
+                    {selectedPost.comments.map((comment) => (
+                      <ListItem key={comment.id}>
+                        <ListItemAvatar>
+                          <Avatar src={comment.user_image || "https://picsum.photos/100"} />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={comment.username === currentUsername ? "Você" : comment.username || "Anônimo"}
+                          secondary={comment.content}
+                        />
+                        <IconButton onClick={() => handleLikeComment(comment.id)}>
+                          {comment.liked_by_user ? (
+                            <FavoriteIcon sx={{ color: "red" }} />
+                          ) : (
+                            <FavoriteBorderIcon />
+                          )}
+                        </IconButton>
+
+                        
+                      </ListItem>
+                    ))}
+
+                  </List>
+                ) : (
+                  <Typography variant="body2" sx={{ textAlign: "center", mt: 2, flexGrow: 1 }}>
+                    Sem comentários ainda.
+                  </Typography>
+                )}
+              </DialogContent>
+
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "100%",
+                  backgroundColor: "white",
+                  padding: "10px",
+                  borderTop: "1px solid rgba(0, 0, 0, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Escreva um comentário..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                />
+                <Button variant="contained" onClick={handleAddComment}>
+                  Comentar
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+        )}
+      </Dialog>
+
 
 
 
