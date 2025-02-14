@@ -2,20 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useListMyPosts } from "../hooks/usePosts/useListMyPosts";
 import {
   Avatar,
+  Box,
   Card,
   CardActions,
   CardContent,
   CardHeader,
   CardMedia,
+  Grid,
   Grid2,
   IconButton,
   Typography,
 } from "@mui/material";
 import { red } from "@mui/material/colors";
-import { AnimatePresence, motion } from "motion/react";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import { useState } from "react";
+import noImage from "../assets/no-image.png"
+
 
 export const Route = createFileRoute("/_auth/my-posts")({
   component: RouteComponent,
@@ -23,109 +23,99 @@ export const Route = createFileRoute("/_auth/my-posts")({
 
 function RouteComponent() {
   const { data: myPosts } = useListMyPosts();
-  const [isFavorite, setIsFavorite] = useState(false);
-
-  const handleFavoriteClick = () => {
-    // Toggle o estado
-    setIsFavorite((prev) => !prev);
+  const truncateText = (text = "", maxLength: number) => {
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
+
 
   return (
     <Grid2
-      container
-      spacing={3}
-      justifyContent="center"
-      sx={{
-        padding: "20px",
-        minHeight: "100vh",
-      }}
-    >
-      {myPosts?.map((post) => (
-        <Grid2
-          size={{
-            xs: 12,
-            sm: 6,
-            md: 4,
-            lg: 3,
+    container
+    direction="column"
+    alignItems="center"
+    spacing={2}
+    sx={{ padding: "20px", minHeight: "100vh", overflowY: "scroll" }}
+  >
+{myPosts?.map((item, index) => (
+      <Grid
+        item
+        xs={12}
+        sm={10}
+        md={8}
+        lg={6}
+        key={index}
+        sx={{ width: "100%" }}
+      >
+        <Card
+          sx={{
+            width: "100%",
+            maxWidth: "600px",
+            borderRadius: "12px",
+            boxShadow: 3,
+            margin: "0 auto",
           }}
         >
-          <Card sx={{ maxWidth: 345 }}>
-            <CardHeader
-              avatar={
-                <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                  R
-                </Avatar>
-              }
-              title="Shrimp and Chorizo Paella"
-              subheader="September 14, 2016"
-            />
-            <CardMedia
-              component="img"
-              height="194"
-              image={post?.image_url}
-              alt="Paella dish"
-            />
-            <CardContent>
+          <CardHeader
+            avatar={
+              <Avatar
+                src={item?.profile_image || "https://picsum.photos/100"}
+                sx={{ bgcolor: red[500] }}
+                aria-label="user"
+              >
+                {item?.author?.charAt(0).toUpperCase() || "U"}
+              </Avatar>
+            }
+            title={truncateText(item?.author || "Usuário Desconhecido", 30)}
+            subheader={truncateText(item.title || "", 50)}
+          />
+          <CardMedia
+            component="img"
+            image={item.image_url || noImage}
+            sx={{
+              width: "100%",
+              height: "auto",
+              maxHeight: "500px",
+              minHeight: "350px",
+              objectFit: "contain",
+            }}
+          />
+          <CardContent>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                flexWrap: "wrap",
+              }}
+            >
+              <Typography variant="body1" fontWeight="bold">
+                {truncateText(item?.author, 25)}
+              </Typography>
               <Typography
                 variant="body2"
+                color="text.secondary"
                 sx={{
-                  color: "text.secondary",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: "vertical",
+                  whiteSpace: "nowrap",
+                  flexGrow: 1,
                 }}
               >
-                This impressive paella is a perfect party dish and a fun meal to
-                cook together with your guests. Add 1 cup of frozen peas along
-                with the mussels, if you like.
+                {truncateText(
+                  item.description || "Nenhuma descrição disponível.",
+                  50
+                )}
               </Typography>
-            </CardContent>
-            <CardActions disableSpacing>
-              <IconButton
-                onClick={handleFavoriteClick}
-                aria-label="add to favorites"
-                sx={{
-                  height: "40px",
-                }}
-              >
-                <AnimatePresence mode="popLayout">
-                  {isFavorite ? (
-                    <motion.div
-                      key="favorite"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                    >
-                      <FavoriteIcon sx={{ color: "red" }} />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="favoriteBorder"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                    >
-                      <FavoriteBorderIcon />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </IconButton>
-            </CardActions>
-          </Card>
-        </Grid2>
-      ))}
-    </Grid2>
+            </Box>
+
+          </CardContent>
+
+
+        </Card>
+      </Grid>
+    ))}
+  </Grid2>
   );
 }
+
+

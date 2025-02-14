@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from "axios";
-import { apiRequestWithToken } from "../../config/api";
+import { apiRequestWithOptionalToken, apiRequestWithoutToken, apiRequestWithToken } from "../../config/api";
 import { CreatePostInput, ListMyPostsResponse } from "../../types/posts";
 
 export const createPost = async (input: CreatePostInput): Promise<any> => {
@@ -27,6 +27,75 @@ export const createPost = async (input: CreatePostInput): Promise<any> => {
 export const listMyPosts = async (): Promise<ListMyPostsResponse> => {
   const config: AxiosRequestConfig = {
     url: "/api/posts/my-posts",
+    method: "GET",
+  };
+
+  return apiRequestWithToken<ListMyPostsResponse>(config);
+};
+
+export const getAllPosts = async (): Promise<ListMyPostsResponse> => {
+  const config: AxiosRequestConfig = {
+    url: "/api/posts/list",
+    method: "GET",
+  };
+
+  return apiRequestWithOptionalToken<ListMyPostsResponse>(config);
+};
+
+type CreateComment = {
+  postId: number;
+  content: string;
+};
+
+export const createComment = async (input: CreateComment): Promise<any> => {
+  const config: AxiosRequestConfig = {
+    url: `/api/comments/create`,
+    method: "POST",
+    data: { content: input.content, post_id: input.postId },
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  return apiRequestWithToken<any>(config);
+};
+
+type LikeCommentInput = {
+  commentId: number;
+};
+
+export const likeComment = async (input: LikeCommentInput): Promise<any> => {
+  const config: AxiosRequestConfig = {
+    url: `/api/user/like/${input.commentId}`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  return apiRequestWithToken<any>(config);
+};
+
+type FavoritePostInput = {
+  postId: number;
+};
+
+export const favoritePost = async (input: FavoritePostInput): Promise<any> => {
+  const config: AxiosRequestConfig = {
+    url: `/api/user/favorite/${input.postId}`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  return apiRequestWithToken<any>(config);
+};
+
+
+export const getFavoritePosts = async (): Promise<ListMyPostsResponse> => {
+  const config: AxiosRequestConfig = {
+    url: "/api/user/favorites",
     method: "GET",
   };
 
