@@ -9,5 +9,8 @@
     "skipLibCheck": true,
     "types": ["vite/client"]
   },
-  "include": ["src", "env.d.ts"]
+  "include": [
+    "src",
+    "env.d.ts"
+  ]
 }

@@ -1,14 +1,14 @@
 import { useMutation } from "@tanstack/react-query";
-import { signIn } from "../../service/auth/auth";
+import { createPost } from "../../service/posts/posts";
+import axios from "axios";
 import { showSnackbar } from "../../context/snackbarContext";
-import axios, { AxiosError } from "axios";
 
-export const useSignIn = () => {
+export const useCreatePost = () => {
   return useMutation({
-    mutationKey: ["useSignIn"],
-    mutationFn: signIn,
+    mutationKey: ["useCreatePost"],
+    mutationFn: createPost,
     onError: (error: unknown) => {
-      let errorMessage = "Erro ao fazer login";
+      let errorMessage = "Erro ao Criar Post";
 
       if (axios.isAxiosError(error)) {
         errorMessage = error.response?.data?.error;
@@ -17,7 +17,7 @@ export const useSignIn = () => {
       showSnackbar(errorMessage, "error");
     },
     onSuccess: () => {
-      showSnackbar("Login realizado com sucesso!", "success");
+      showSnackbar("Post criado com sucesso!", "success");
     },
   });
 };

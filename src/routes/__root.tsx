@@ -22,6 +22,9 @@ import {
   useMediaQuery,
   Theme,
 } from "@mui/material";
+import logo from "../assets/logo.png";
+
+
 import { AuthContextValue, useAuth } from "../context/auth";
 import MenuIcon from "@mui/icons-material/Menu";
 import { getDecryptedToken } from "../utils/encryption";
@@ -97,19 +100,28 @@ function RootComponent() {
                 <MenuIcon />
               </IconButton>
             )}
+
             <Typography
-              variant="h6"
-              noWrap
               component={Link}
               to="/"
               sx={{
                 mr: 2,
-                color: "inherit",
+                display: "flex",
+                alignItems: "center",
                 textDecoration: "none",
               }}
             >
-              Blog
+              <img
+                src={logo}
+                alt="Logo"
+                style={{
+                  height: "40px", 
+                  width: "auto",
+                  maxWidth: "150px",
+                }}
+              />
             </Typography>
+
             {!isMobile && auth.isAuthenticated && (
               <Box display={"flex"} gap={3}>
                 {pages.map(({ label, to }) => (
