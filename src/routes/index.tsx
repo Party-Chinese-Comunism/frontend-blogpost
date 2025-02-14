@@ -28,7 +28,7 @@ import { useState } from "react";
 import { useListAllPosts } from "../hooks/usePosts/useListAllPosts";
 import { ListMyPostsResponse, Post } from "../types/posts";
 import { useCreateComment } from "../hooks/usePosts/useCreateComment";
-import noImage from "../assets/no-image.png"
+import noImage from "../assets/no-image.png";
 import { useFavoritePost } from "../hooks/usePosts/useFavoritePost";
 import { useLikeComent } from "../hooks/usePosts/useLikeComent";
 
@@ -54,12 +54,10 @@ function HomeComponent() {
   const handleAddComment = async () => {
     if (!newComment.trim() || !selectedPost) return;
 
-
     createCommentMutation.mutate(
       { postId: selectedPost.id, content: newComment },
       {
         onSuccess: () => {
-
           setSelectedPost((prev) => {
             if (!prev) return prev;
 
@@ -78,7 +76,6 @@ function HomeComponent() {
             };
           });
 
-
           setNewComment("");
         },
         onError: (error) => {
@@ -87,7 +84,6 @@ function HomeComponent() {
       }
     );
   };
-
 
   const handleFavoriteClick = (postId: number) => {
     setFavorites((prev) => ({ ...prev, [postId]: !prev[postId] }));
@@ -101,7 +97,6 @@ function HomeComponent() {
       }
     );
   };
-
 
   const handleOpenComments = (post: Post) => {
     setSelectedPost(post);
@@ -118,7 +113,7 @@ function HomeComponent() {
   const handleLikeComment = (commentId: number) => {
     setSelectedPost((prev) => {
       if (!prev) return prev;
-  
+
       return {
         ...prev,
         comments: prev.comments.map((comment) =>
@@ -128,14 +123,14 @@ function HomeComponent() {
         ),
       };
     });
-  
+
     likeCommentMutation.mutate(
       { commentId },
       {
         onError: () => {
           setSelectedPost((prev) => {
             if (!prev) return prev;
-  
+
             return {
               ...prev,
               comments: prev.comments.map((comment) =>
@@ -149,7 +144,7 @@ function HomeComponent() {
       }
     );
   };
-  
+
   const truncateText = (text = "", maxLength: number) => {
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
@@ -164,7 +159,7 @@ function HomeComponent() {
       </Typography>
     );
   }
-  
+
   return (
     <>
       <Grid
@@ -258,7 +253,7 @@ function HomeComponent() {
               {user && (
                 <CardActions>
                   <IconButton onClick={() => handleFavoriteClick(item.id)}>
-                    { item.favorited_by_user ? (
+                    {item.favorited_by_user ? (
                       <FavoriteIcon sx={{ color: "red" }} />
                     ) : (
                       <FavoriteBorderIcon />
@@ -270,7 +265,6 @@ function HomeComponent() {
                   </IconButton>
                 </CardActions>
               )}
-
             </Card>
           </Grid>
         ))}
@@ -303,7 +297,7 @@ function HomeComponent() {
                   height: "400px",
                   maxHeight: "400px",
                   minHeight: "400px",
-                  objectFit: "cover",
+                  objectFit: "contain",
                   borderRadius: "8px",
                 }}
               />
@@ -344,27 +338,37 @@ function HomeComponent() {
                     {selectedPost.comments.map((comment) => (
                       <ListItem key={comment.id}>
                         <ListItemAvatar>
-                          <Avatar src={comment.user_image || "https://picsum.photos/100"} />
+                          <Avatar
+                            src={
+                              comment.user_image || "https://picsum.photos/100"
+                            }
+                          />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={comment.username === currentUsername ? "Você" : comment.username || "Anônimo"}
+                          primary={
+                            comment.username === currentUsername
+                              ? "Você"
+                              : comment.username || "Anônimo"
+                          }
                           secondary={comment.content}
                         />
-                        <IconButton onClick={() => handleLikeComment(comment.id)}>
+                        <IconButton
+                          onClick={() => handleLikeComment(comment.id)}
+                        >
                           {comment.liked_by_user ? (
                             <FavoriteIcon sx={{ color: "red" }} />
                           ) : (
                             <FavoriteBorderIcon />
                           )}
                         </IconButton>
-
-                        
                       </ListItem>
                     ))}
-
                   </List>
                 ) : (
-                  <Typography variant="body2" sx={{ textAlign: "center", mt: 2, flexGrow: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ textAlign: "center", mt: 2, flexGrow: 1 }}
+                  >
                     Sem comentários ainda.
                   </Typography>
                 )}
@@ -399,11 +403,6 @@ function HomeComponent() {
           </Box>
         )}
       </Dialog>
-
-
-
-
-
     </>
   );
 }
