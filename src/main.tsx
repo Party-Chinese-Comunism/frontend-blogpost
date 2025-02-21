@@ -8,6 +8,7 @@ import { createTheme, ThemeProvider } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider } from "./context/snackbarContext";
 import theme from "./theme/theme";
+import { LayoutProvider } from "./context/layoutContext";
 
 // Set up a Router instance
 const router = createRouter({
@@ -36,11 +37,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
-        <AuthProvider>
-          <SnackbarProvider>
-            <InnerApp />
-          </SnackbarProvider>
-        </AuthProvider>
+        <SnackbarProvider>
+          <AuthProvider>
+            <LayoutProvider>
+              <InnerApp />
+            </LayoutProvider>
+          </AuthProvider>
+        </SnackbarProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

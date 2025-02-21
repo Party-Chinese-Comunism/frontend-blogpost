@@ -21,13 +21,15 @@ import {
   ListItemText,
   useMediaQuery,
   Theme,
+  useTheme,
 } from "@mui/material";
-import logo from "../assets/logo.png";
-
-
-import { AuthContextValue, useAuth } from "../context/auth";
 import MenuIcon from "@mui/icons-material/Menu";
-import { getDecryptedToken } from "../utils/encryption";
+import logo from "../assets/logo.png";
+import { AuthContextValue, useAuth } from "../context/auth";
+import theme from "../theme/theme";
+import { Header } from "../components/Layout/Header/Header";
+import Sidebar from "../components/Layout/Sidebar/Sidebar";
+
 interface MyRouterContext {
   auth: AuthContextValue;
 }
@@ -35,148 +37,31 @@ interface MyRouterContext {
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: RootComponent,
 });
+
 function RootComponent() {
-  const auth = useAuth();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const isMobile = useMediaQuery((theme: Theme) =>
-    theme.breakpoints.down("md")
-  );
-
-  const pages = [
-    { label: "Meus Posts", to: "/my-posts" },
-    { label: "Criar Post", to: "/new-post" },
-    { label: "Favoritos", to: "/favorites" },
-  ];
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const drawerContent = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
-      <Box sx={{ py: 1 }}>
-        <Typography
-          variant="h6"
-          sx={{ textDecoration: "none", color: "inherit" }}
-          component={Link}
-          to="/"
-        >
-          Blog
-        </Typography>
-      </Box>
-      <Divider />
-
-      <List>
-        {pages.map(({ label, to }) => (
-          <ListItem key={label} disablePadding>
-            <ListItemButton component={Link} to={to} sx={{ textAlign: "left" }}>
-              <ListItemText primary={label} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
-
+  const theme = useTheme();
+  const { isAuthenticated } = useAuth();
   return (
-    <>
-      <AppBar position="static">
-        <Container maxWidth="xl">
-          <Toolbar
-            disableGutters
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            {isMobile && auth.isAuthenticated && (
-              <IconButton
-                size="large"
-                aria-label="open drawer"
-                onClick={handleDrawerToggle}
-                color="inherit"
-                sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
-
-            <Typography
-              component={Link}
-              to="/"
-              sx={{
-                mr: 2,
-                display: "flex",
-                alignItems: "center",
-                textDecoration: "none",
-              }}
-            >
-              <img
-                src={logo}
-                alt="Logo"
-                style={{
-                  height: "40px", 
-                  width: "auto",
-                  maxWidth: "150px",
-                }}
-              />
-            </Typography>
-
-            {!isMobile && auth.isAuthenticated && (
-              <Box display={"flex"} gap={3}>
-                {pages.map(({ label, to }) => (
-                  <Button
-                    key={label}
-                    component={Link}
-                    to={to}
-                    sx={{ my: 2, color: "white", display: "block" }}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </Box>
-            )}
-
-            <>
-              {auth.isAuthenticated ? (
-                <Button color="inherit" onClick={auth.logout}>
-                  Logout
-                </Button>
-              ) : (
-                <Box display={"flex"} gap={2}>
-                  <Button component={Link} to="/login" color="inherit">
-                    Entrar
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    component={Link}
-                    to="/register"
-                    color="inherit"
-                  >
-                    Cadastrar
-                  </Button>
-                </Box>
-              )}
-            </>
-          </Toolbar>
-        </Container>
-      </AppBar>
-
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }}
+    <Box sx={{ display: "flex" }}>
+      <Header />
+      {isAuthenticated && <Sidebar />}
+      <Box
+        component="main"
         sx={{
-          display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: 240 },
+          flexGrow: 1,
+          p: 3,
+          height: "100vh",
+          transition: theme.transitions.create("margin", {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
         }}
       >
-        {drawerContent}
-      </Drawer>
-
-      <Outlet />
-      <TanStackRouterDevtools position="bottom-right" />
-    </>
+        <Toolbar />
+        <Outlet />
+      </Box>
+    </Box>
   );
 }
+
+export default RootComponent;

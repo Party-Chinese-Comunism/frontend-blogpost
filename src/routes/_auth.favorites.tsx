@@ -147,7 +147,7 @@ function FavoritesComponent() {
         direction="column"
         alignItems="center"
         spacing={2}
-        sx={{ padding: "20px", minHeight: "100vh", overflowY: "scroll" }}
+        sx={{ padding: "20px", minHeight: "100vh", overflowY: "hidden" }}
       >
         {data.map((item, index) => (
           <Grid
