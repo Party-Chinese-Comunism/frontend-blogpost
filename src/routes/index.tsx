@@ -50,7 +50,6 @@ function HomeComponent() {
   const currentUsername = user?.user?.username || "Anônimo";
   const favoritePostMutation = useFavoritePost();
 
-  // Hook para carregar os comentários dinamicamente ao abrir o modal
   const {
     data: comments = [],
     isLoading: isLoadingComments,
@@ -65,7 +64,7 @@ function HomeComponent() {
       {
         onSuccess: () => {
           setNewComment("");
-          refetch(); // Atualiza a lista de comentários após adicionar um novo
+          refetch();
         },
         onError: (error) => {
           console.error("Erro ao enviar comentário:", error);
@@ -102,7 +101,7 @@ function HomeComponent() {
       { commentId },
       {
         onSuccess: () => {
-          refetch(); // Atualiza os comentários após curtir
+          refetch(); 
         },
       }
     );

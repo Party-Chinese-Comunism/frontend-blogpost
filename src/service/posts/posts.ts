@@ -1,6 +1,7 @@
 import { AxiosRequestConfig } from "axios";
 import { apiRequestWithOptionalToken, apiRequestWithoutToken, apiRequestWithToken } from "../../config/api";
 import { CreatePostInput, ListMyPostsResponse } from "../../types/posts";
+import { Comment } from "../../types/posts";
 
 export const createPost = async (input: CreatePostInput): Promise<any> => {
   const formData = new FormData();
@@ -73,8 +74,9 @@ export const getCommentsByPostId = async ({ postId }: GetCommentsInput): Promise
     method: "GET",
   };
 
-  return apiRequestWithOptionalToken<Comment[]>(config);
-};
+  const response = await apiRequestWithOptionalToken<{ data: Comment[] }>(config);
+  return response.data; }
+
 
 export const likeComment = async (input: LikeCommentInput): Promise<any> => {
   const config: AxiosRequestConfig = {
