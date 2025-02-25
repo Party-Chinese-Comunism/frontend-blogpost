@@ -131,7 +131,7 @@ function HomeComponent() {
                 image={item.image_url || noImage}
                 sx={{ width: "100%", height: "auto", maxHeight: "500px", minHeight: "350px", objectFit: "contain" }}
               />
-              <CardContent>
+                    <CardContent>
                 <Typography
                   variant="body2"
                   sx={{ color: "gray", cursor: "pointer", mt: 1 }}
@@ -141,9 +141,7 @@ function HomeComponent() {
                     ? `Ver todos os ${item.comments_number} comentários`
                     : "Sem comentários ainda"}
                 </Typography>
-              </CardContent>
-
-              {/* Ícones de like e comentário lado a lado na esquerda */}
+              </CardContent>     
               <CardActions sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
                 <IconButton onClick={() => handleFavoriteClick(item.id)}>
                   {item.favorited_by_user ? <FavoriteIcon sx={{ color: "red" }} /> : <FavoriteBorderIcon />}
@@ -168,35 +166,107 @@ function HomeComponent() {
               flexDirection: { xs: "column", md: "row" },
               height: "700px",
               padding: 2,
-              position: "relative",
+              overflow: "hidden",
             }}
           >
-            {/* Botão de fechar no canto superior direito */}
-            <IconButton
-              onClick={handleClose}
-              sx={{ position: "absolute", top: 10, right: 10, zIndex: 2 }}
+            <Box
+              sx={{
+                flex: { xs: "1 1 auto", md: "3 3 auto" },
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 2,
+                minHeight: "300px",
+              }}
             >
-              <CloseIcon />
-            </IconButton>
-
-            {/* Imagem do post */}
-            <Box sx={{ flex: { xs: "none", md: "1 1 50%" }, display: "flex", alignItems: "center", justifyContent: "center", padding: 2 }}>
-              <img src={selectedPost?.image_url || noImage} style={{ width: "100%", maxHeight: "400px", objectFit: "cover", borderRadius: "8px" }} />
+              <img
+                src={selectedPost?.image_url || noImage}
+                style={{
+                  width: "100%",
+                  height: "400px",
+                  maxHeight: "400px",
+                  minHeight: "400px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                }}
+              />
             </Box>
 
-            {/* Área de comentários */}
-            <Box sx={{ flex: { xs: "none", md: "1 1 50%" }, display: "flex", flexDirection: "column", padding: 2 }}>
+            <Box
+              sx={{
+                width: "2px",
+                backgroundColor: "rgba(0, 0, 0, 0.2)",
+                display: { xs: "none", md: "block" },
+              }}
+            />
+
+            <Box
+              sx={{
+                flex: { xs: "1 1 auto", md: "2 2 auto" },
+                display: "flex",
+                flexDirection: "column",
+                padding: 2,
+                height: "100%",
+              }}
+            >
               <DialogTitle>Comentários</DialogTitle>
-              <DialogContent sx={{ flex: 1, overflowY: "auto", paddingBottom: "80px" }}>
+              <DialogContent
+                sx={{
+                  flex: 1,
+                  overflowY: "auto",
+                  scrollbarWidth: "none",
+                  "&::-webkit-scrollbar": { display: "none" },
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  paddingBottom: "80px",
+                }}
+              >
                 {isLoadingComments ? <CircularProgress /> : comments.length > 0 ? (
-                  <List>{comments.map((comment) => (
-                    <ListItem key={comment.id}>
-                      <ListItemAvatar><Avatar src={comment.user_image || "https://picsum.photos/100"} /></ListItemAvatar>
-                      <ListItemText primary={comment.username || "Anônimo"} secondary={comment.content} />
-                    </ListItem>
-                  ))}</List>
-                ) : <Typography>Sem comentários ainda.</Typography>}
+                    <List>{comments.map((comment) => (
+                      <ListItem key={comment.id}>
+                        <ListItemAvatar>
+                          <Avatar src={comment.user_image || "https://picsum.photos/100"} />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={comment.username === currentUsername ? "Você" : comment.username || "Anônimo"}
+                          secondary={comment.content}
+                        />
+
+                      </ListItem>
+                    ))}</List>
+                ) : (
+                  <Typography variant="body2" sx={{ textAlign: "center", mt: 2, flexGrow: 1 }}>
+                    Sem comentários ainda.
+                  </Typography>
+                )}
               </DialogContent>
+
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "100%",
+                  backgroundColor: "white",
+                  padding: "10px",
+                  borderTop: "1px solid rgba(0, 0, 0, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Escreva um comentário..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                />
+                <Button variant="contained" onClick={handleAddComment}>
+                  Comentar
+                </Button>
+              </Box>
             </Box>
           </Box>
         )}
