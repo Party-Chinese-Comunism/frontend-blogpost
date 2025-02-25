@@ -51,7 +51,11 @@ function HomeComponent() {
   const favoritePostMutation = useFavoritePost();
 
   // Hook para carregar os comentários dinamicamente ao abrir o modal
-  const { data: comments = [], isLoading: isLoadingComments, refetch } = useListComments(selectedPost?.id || null);
+  const {
+    data: comments = [],
+    isLoading: isLoadingComments,
+    refetch,
+  } = useListComments(selectedPost?.id || null);
 
   const handleAddComment = async () => {
     if (!newComment.trim() || !selectedPost) return;
@@ -113,13 +117,38 @@ function HomeComponent() {
 
   return (
     <>
-      <Grid container direction="column" alignItems="center" spacing={2} sx={{ padding: "20px", minHeight: "100vh" }}>
+      <Grid
+        container
+        direction="column"
+        alignItems="center"
+        spacing={2}
+        sx={{ padding: "20px", minHeight: "100vh" }}
+      >
         {data.map((item) => (
-          <Grid item xs={12} sm={10} md={8} lg={6} key={item.id} sx={{ width: "100%" }}>
-            <Card sx={{ width: "100%", maxWidth: "600px", borderRadius: "12px", boxShadow: 3, margin: "0 auto" }}>
+          <Grid
+            item
+            xs={12}
+            sm={10}
+            md={8}
+            lg={6}
+            key={item.id}
+            sx={{ width: "100%" }}
+          >
+            <Card
+              sx={{
+                width: "100%",
+                maxWidth: "600px",
+                borderRadius: "12px",
+                boxShadow: 3,
+                margin: "0 auto",
+              }}
+            >
               <CardHeader
                 avatar={
-                  <Avatar src={item?.author_image || "https://picsum.photos/100"} sx={{ bgcolor: red[500] }}>
+                  <Avatar
+                    src={item?.author_image || "https://picsum.photos/100"}
+                    sx={{ bgcolor: red[500] }}
+                  >
                     {item?.author?.charAt(0).toUpperCase() || "U"}
                   </Avatar>
                 }
@@ -129,9 +158,15 @@ function HomeComponent() {
               <CardMedia
                 component="img"
                 image={item.image_url || noImage}
-                sx={{ width: "100%", height: "auto", maxHeight: "500px", minHeight: "350px", objectFit: "contain" }}
+                sx={{
+                  width: "100%",
+                  height: "auto",
+                  maxHeight: "500px",
+                  minHeight: "350px",
+                  objectFit: "contain",
+                }}
               />
-                    <CardContent>
+              <CardContent>
                 <Typography
                   variant="body2"
                   sx={{ color: "gray", cursor: "pointer", mt: 1 }}
@@ -141,10 +176,20 @@ function HomeComponent() {
                     ? `Ver todos os ${item.comments_number} comentários`
                     : "Sem comentários ainda"}
                 </Typography>
-              </CardContent>     
-              <CardActions sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
+              </CardContent>
+              <CardActions
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
                 <IconButton onClick={() => handleFavoriteClick(item.id)}>
-                  {item.favorited_by_user ? <FavoriteIcon sx={{ color: "red" }} /> : <FavoriteBorderIcon />}
+                  {item.favorited_by_user ? (
+                    <FavoriteIcon sx={{ color: "red" }} />
+                  ) : (
+                    <FavoriteBorderIcon />
+                  )}
                 </IconButton>
                 <Typography variant="body2">{item.favorite_number}</Typography>
 
@@ -164,28 +209,32 @@ function HomeComponent() {
             sx={{
               display: "flex",
               flexDirection: { xs: "column", md: "row" },
-              height: "700px",
+              height: "auto",
               padding: 2,
-              overflow: "hidden",
+              position: "relative",
             }}
           >
+            <IconButton
+              onClick={handleClose}
+              sx={{ position: "absolute", top: 10, right: 10 }}
+            >
+              <CloseIcon />
+            </IconButton>
+
             <Box
               sx={{
-                flex: { xs: "1 1 auto", md: "3 3 auto" },
+                flex: { xs: "none", md: "3 3 auto" },
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 padding: 2,
-                minHeight: "300px",
               }}
             >
               <img
                 src={selectedPost?.image_url || noImage}
                 style={{
                   width: "100%",
-                  height: "400px",
                   maxHeight: "400px",
-                  minHeight: "400px",
                   objectFit: "cover",
                   borderRadius: "8px",
                 }}
@@ -199,14 +248,12 @@ function HomeComponent() {
                 display: { xs: "none", md: "block" },
               }}
             />
-
             <Box
               sx={{
-                flex: { xs: "1 1 auto", md: "2 2 auto" },
+                flex: { xs: "none", md: "2 2 auto" },
                 display: "flex",
                 flexDirection: "column",
                 padding: 2,
-                height: "100%",
               }}
             >
               <DialogTitle>Comentários</DialogTitle>
@@ -222,11 +269,17 @@ function HomeComponent() {
                   paddingBottom: "80px",
                 }}
               >
-                {isLoadingComments ? <CircularProgress /> : comments.length > 0 ? (
+                {isLoadingComments ? (
+                  <CircularProgress />
+                ) : comments.length > 0 ? (
                     <List>{comments.map((comment) => (
                       <ListItem key={comment.id}>
                         <ListItemAvatar>
-                          <Avatar src={comment.user_image || "https://picsum.photos/100"} />
+                          <Avatar
+                            src={
+                              comment.user_image || "https://picsum.photos/100"
+                            }
+                          />
                         </ListItemAvatar>
                         <ListItemText
                           primary={comment.username === currentUsername ? "Você" : comment.username || "Anônimo"}
