@@ -63,6 +63,18 @@ export const createComment = async (input: CreateComment): Promise<any> => {
 type LikeCommentInput = {
   commentId: number;
 };
+type GetCommentsInput = {
+  postId: number;
+};
+
+export const getCommentsByPostId = async ({ postId }: GetCommentsInput): Promise<Comment[]> => {
+  const config: AxiosRequestConfig = {
+    url: `/api/comments/list/${postId}`,
+    method: "GET",
+  };
+
+  return apiRequestWithOptionalToken<Comment[]>(config);
+};
 
 export const likeComment = async (input: LikeCommentInput): Promise<any> => {
   const config: AxiosRequestConfig = {
