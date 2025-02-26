@@ -130,6 +130,7 @@ const Sidebar = () => {
       onClose={() => setToggled(false)}
       sx={{
         width: effectiveSidebarWidth,
+        height: "100vh",
         transition: theme.transitions.create(["margin", "width"], {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.leavingScreen,

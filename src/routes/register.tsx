@@ -15,7 +15,9 @@ import { useForm, SubmitHandler } from "react-hook-form";
 
 import { SignUpInput } from "../types/auth";
 import { useSignUp } from "../hooks/useAuth/useSignUp";
-
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
 export const Route = createFileRoute("/register")({
   component: RouteComponent,
 });
@@ -71,13 +73,41 @@ function RouteComponent() {
     },
   }));
   const navigate = useNavigate();
+  const onSubmit: SubmitHandler<SignUpInput> = async (data) => {
+    try {
+      const res = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+      await setDoc(doc(db, "users", res.user.uid), {
+        username: data.username,
+        email: data.email,
+        id: res.user.uid,
+      });
 
-  const onSubmit: SubmitHandler<SignUpInput> = (data) => {
-    signUp(data, {
-      onSuccess: () => {
-        navigate({ to: "/login" });
-      },
-    });
+      await setDoc(doc(db, "userchats", res.user.uid), {
+        chats: [],
+      });
+
+      signUp(data, {
+        onSuccess: async (response) => {
+          await setDoc(doc(db, "users", res.user.uid), {
+            username: data.username,
+            email: data.email,
+            id: res.user.uid,
+          });
+
+          await setDoc(doc(db, "userchats", res.user.uid), {
+            chats: [],
+          });
+
+          navigate({ to: "/login" });
+        },
+      });
+    } catch (error) {
+      console.error("Erro ao criar usuário ou salvar dados:", error);
+    }
   };
 
   return (

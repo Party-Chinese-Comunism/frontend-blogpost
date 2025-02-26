@@ -8,7 +8,7 @@ import {
   CardContent,
   Typography,
   CardActions,
-  Grid,
+  Grid2,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -162,20 +162,22 @@ function HomeComponent() {
 
   return (
     <>
-      <Grid
+      <Grid2
         container
+        display={"flex"}
         direction="column"
         alignItems="center"
         spacing={2}
-        sx={{ padding: "20px", minHeight: "100vh" }}
+        sx={{ padding: "20px", minHeight: "100vh", height: "auto" }}
       >
         {data.map((item, index) => (
-          <Grid
-            item
-            xs={12}
-            sm={10}
-            md={8}
-            lg={6}
+          <Grid2
+            size={{
+              xs: 12,
+              sm: 10,
+              md: 8,
+              lg: 6,
+            }}
             key={index}
             sx={{ width: "100%" }}
           >
@@ -266,9 +268,9 @@ function HomeComponent() {
                 </CardActions>
               )}
             </Card>
-          </Grid>
+          </Grid2>
         ))}
-      </Grid>
+      </Grid2>
       <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
         {selectedPost && (
           <Box
