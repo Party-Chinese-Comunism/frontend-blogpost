@@ -74,8 +74,8 @@ export const getCommentsByPostId = async ({ postId }: GetCommentsInput): Promise
     method: "GET",
   };
 
-  const response = await apiRequestWithOptionalToken<{ data: Comment[] }>(config);
-  return response.data; }
+    const response = await apiRequestWithOptionalToken<Comment[]>(config); 
+    return response;};
 
 
 export const likeComment = async (input: LikeCommentInput): Promise<any> => {
