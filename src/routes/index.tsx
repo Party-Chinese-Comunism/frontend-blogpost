@@ -34,12 +34,15 @@ import noImage from "../assets/no-image.png";
 import { useFavoritePost } from "../hooks/usePosts/useFavoritePost";
 import { useLikeComent } from "../hooks/usePosts/useLikeComent";
 import { useListComments } from "../hooks/usePosts/useListComments";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
 function HomeComponent() {
+  const navigate = useNavigate();
+
   const { data = [], isLoading, isError } = useListAllPosts();
   const [newComment, setNewComment] = useState("");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -146,14 +149,23 @@ function HomeComponent() {
                 avatar={
                   <Avatar
                     src={item?.author_image || "https://picsum.photos/100"}
-                    sx={{ bgcolor: red[500] }}
+                    sx={{ bgcolor: red[500], cursor: "pointer" }}
+                    onClick={() => navigate({ to: `/user/${item.user_id}` })}
                   >
                     {item?.author?.charAt(0).toUpperCase() || "U"}
                   </Avatar>
                 }
-                title={truncateText(item?.author || "Usuário Desconhecido", 30)}
+                title={
+                  <Typography
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => navigate({ to: `/user/${item.user_id}` })}
+                  >
+                    {truncateText(item?.author || "Usuário Desconhecido", 30)}
+                  </Typography>
+                }
                 subheader={truncateText(item.title || "", 50)}
               />
+
               <CardMedia
                 component="img"
                 image={item.image_url || noImage}
@@ -271,7 +283,8 @@ function HomeComponent() {
                 {isLoadingComments ? (
                   <CircularProgress />
                 ) : comments.length > 0 ? (
-                    <List>{comments.map((comment) => (
+                  <List>
+                    {comments.map((comment) => (
                       <ListItem key={comment.id}>
                         <ListItemAvatar>
                           <Avatar
@@ -281,14 +294,21 @@ function HomeComponent() {
                           />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={comment.username === currentUsername ? "Você" : comment.username || "Anônimo"}
+                          primary={
+                            comment.username === currentUsername
+                              ? "Você"
+                              : comment.username || "Anônimo"
+                          }
                           secondary={comment.content}
                         />
-
                       </ListItem>
-                    ))}</List>
+                    ))}
+                  </List>
                 ) : (
-                  <Typography variant="body2" sx={{ textAlign: "center", mt: 2, flexGrow: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ textAlign: "center", mt: 2, flexGrow: 1 }}
+                  >
                     Sem comentários ainda.
                   </Typography>
                 )}

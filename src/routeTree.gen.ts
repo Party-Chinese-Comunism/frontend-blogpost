@@ -15,6 +15,7 @@ import { Route as RegisterImport } from './routes/register'
 import { Route as AuthImport } from './routes/_auth'
 import { Route as IndexImport } from './routes/index'
 import { Route as LoginIndexImport } from './routes/login/index'
+import { Route as UserIdImport } from './routes/user.$id'
 import { Route as AuthNewPostImport } from './routes/_auth.new-post'
 import { Route as AuthMyPostsImport } from './routes/_auth.my-posts'
 import { Route as AuthFavoritesImport } from './routes/_auth.favorites'
@@ -41,6 +42,12 @@ const IndexRoute = IndexImport.update({
 const LoginIndexRoute = LoginIndexImport.update({
   id: '/login/',
   path: '/login/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const UserIdRoute = UserIdImport.update({
+  id: '/user/$id',
+  path: '/user/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -108,6 +115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthNewPostImport
       parentRoute: typeof AuthImport
     }
+    '/user/$id': {
+      id: '/user/$id'
+      path: '/user/$id'
+      fullPath: '/user/$id'
+      preLoaderRoute: typeof UserIdImport
+      parentRoute: typeof rootRoute
+    }
     '/login/': {
       id: '/login/'
       path: '/login'
@@ -141,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof AuthFavoritesRoute
   '/my-posts': typeof AuthMyPostsRoute
   '/new-post': typeof AuthNewPostRoute
+  '/user/$id': typeof UserIdRoute
   '/login': typeof LoginIndexRoute
 }
 
@@ -151,6 +166,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof AuthFavoritesRoute
   '/my-posts': typeof AuthMyPostsRoute
   '/new-post': typeof AuthNewPostRoute
+  '/user/$id': typeof UserIdRoute
   '/login': typeof LoginIndexRoute
 }
 
@@ -162,6 +178,7 @@ export interface FileRoutesById {
   '/_auth/favorites': typeof AuthFavoritesRoute
   '/_auth/my-posts': typeof AuthMyPostsRoute
   '/_auth/new-post': typeof AuthNewPostRoute
+  '/user/$id': typeof UserIdRoute
   '/login/': typeof LoginIndexRoute
 }
 
@@ -174,6 +191,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/my-posts'
     | '/new-post'
+    | '/user/$id'
     | '/login'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -183,6 +201,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/my-posts'
     | '/new-post'
+    | '/user/$id'
     | '/login'
   id:
     | '__root__'
@@ -192,6 +211,7 @@ export interface FileRouteTypes {
     | '/_auth/favorites'
     | '/_auth/my-posts'
     | '/_auth/new-post'
+    | '/user/$id'
     | '/login/'
   fileRoutesById: FileRoutesById
 }
@@ -200,6 +220,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
   RegisterRoute: typeof RegisterRoute
+  UserIdRoute: typeof UserIdRoute
   LoginIndexRoute: typeof LoginIndexRoute
 }
 
@@ -207,6 +228,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   RegisterRoute: RegisterRoute,
+  UserIdRoute: UserIdRoute,
   LoginIndexRoute: LoginIndexRoute,
 }
 
@@ -223,6 +245,7 @@ export const routeTree = rootRoute
         "/",
         "/_auth",
         "/register",
+        "/user/$id",
         "/login/"
       ]
     },
@@ -251,6 +274,9 @@ export const routeTree = rootRoute
     "/_auth/new-post": {
       "filePath": "_auth.new-post.tsx",
       "parent": "/_auth"
+    },
+    "/user/$id": {
+      "filePath": "user.$id.tsx"
     },
     "/login/": {
       "filePath": "login/index.tsx"
