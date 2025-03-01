@@ -27,6 +27,7 @@ export type ListMyPostsResponse = {
   title: string;
   user_id: number;
   profile_image: string;
+  isFollowing: false, //adicionado
 }[];
 
 export type Post = {

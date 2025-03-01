@@ -7,7 +7,14 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "skipLibCheck": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "baseUrl": "src", // Define a pasta base para importaçoes
+    "paths": {
+      "@components/*": ["components/*"], // Permite importar componentes com @components/
+      "@hooks/*": ["hooks/*"], // Permite importar hooks com @hooks/
+      "@api/*": ["api/*"], // Permite importar APis com @api/
+      "@assets/*": ["assets/*"] // Permite importar assets com @assets/
+    }
   },
   "include": [
     "src",

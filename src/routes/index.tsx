@@ -35,6 +35,7 @@ import { useFavoritePost } from "../hooks/usePosts/useFavoritePost";
 import { useLikeComent } from "../hooks/usePosts/useLikeComent";
 import { useListComments } from "../hooks/usePosts/useListComments";
 import { useNavigate } from "@tanstack/react-router";
+import  FollowButton  from '../routes/login/-components/FollowButton';
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -164,6 +165,15 @@ function HomeComponent() {
                   </Typography>
                 }
                 subheader={truncateText(item.title || "", 50)}
+
+                action={                  
+                <FollowButton
+                userId={item.user_id} // seguir e deixar de segir
+                isInitiallyFollowing={item.isFollowing || false}
+                  onFollowToggle={(userId, isFollowing) => {
+                    console.log(`Usuário ${userId} está sendo ${isFollowing ? 'seguido' : 'deixar de seguir'}`);
+                  }}/>
+                }
               />
 
               <CardMedia
