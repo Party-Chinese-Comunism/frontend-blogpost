@@ -13,6 +13,8 @@ import { useSignIn } from "../../../hooks/useAuth/useSignIn";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { encryptToken } from "../../../utils/encryption";
 import { useAuth } from "../../../context/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth as firebaseAuth } from "../../../firebase";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -42,7 +44,9 @@ export default function LoginCard() {
   const { mutate: signIn } = useSignIn();
   const navigate = useNavigate();
   const auth = useAuth();
-  const onSubmit: SubmitHandler<SignInInput> = (data) => {
+  const onSubmit: SubmitHandler<SignInInput> = async (data) => {
+    await signInWithEmailAndPassword(firebaseAuth, data.email, data.password);
+
     signIn(data, {
       onSuccess: (res) => {
         const encrypted = encryptToken(res.access_token);

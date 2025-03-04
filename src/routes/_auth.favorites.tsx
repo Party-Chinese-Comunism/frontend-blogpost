@@ -27,15 +27,14 @@ import CommentIcon from "@mui/icons-material/Comment";
 import { useState } from "react";
 import { Post } from "../types/posts";
 import { useCreateComment } from "../hooks/usePosts/useCreateComment";
-import noImage from "../assets/no-image.png"
+import noImage from "../assets/no-image.png";
 import { useFavoritePost } from "../hooks/usePosts/useFavoritePost";
 import { useLikeComent } from "../hooks/usePosts/useLikeComent";
 import { useGetFavoritePosts } from "../hooks/usePosts/useGetFavoritePosts";
 
-export const Route = createFileRoute('/_auth/favorites')({
+export const Route = createFileRoute("/_auth/favorites")({
   component: FavoritesComponent,
-})
-
+});
 
 function FavoritesComponent() {
   const { data = [], isLoading, isError } = useGetFavoritePosts();
@@ -55,12 +54,10 @@ function FavoritesComponent() {
   const handleAddComment = async () => {
     if (!newComment.trim() || !selectedPost) return;
 
-
     createCommentMutation.mutate(
       { postId: selectedPost.id, content: newComment },
       {
         onSuccess: () => {
-
           setSelectedPost((prev) => {
             if (!prev) return prev;
 
@@ -79,7 +76,6 @@ function FavoritesComponent() {
             };
           });
 
-
           setNewComment("");
         },
         onError: (error) => {
@@ -88,7 +84,6 @@ function FavoritesComponent() {
       }
     );
   };
-
 
   const handleFavoriteClick = (postId: number) => {
     setFavorites((prev) => ({ ...prev, [postId]: !prev[postId] }));
@@ -102,7 +97,6 @@ function FavoritesComponent() {
       }
     );
   };
-
 
   const handleOpenComments = (post: Post) => {
     setSelectedPost(post);
@@ -123,7 +117,10 @@ function FavoritesComponent() {
       { commentId },
       {
         onError: () => {
-          setLikedComments((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
+          setLikedComments((prev) => ({
+            ...prev,
+            [commentId]: !prev[commentId],
+          }));
         },
       }
     );
@@ -142,7 +139,7 @@ function FavoritesComponent() {
       </Typography>
     );
   }
-  
+
   return (
     <>
       <Grid
@@ -150,7 +147,7 @@ function FavoritesComponent() {
         direction="column"
         alignItems="center"
         spacing={2}
-        sx={{ padding: "20px", minHeight: "100vh", overflowY: "scroll" }}
+        sx={{ padding: "20px", minHeight: "100vh", overflowY: "hidden" }}
       >
         {data.map((item, index) => (
           <Grid
@@ -248,7 +245,6 @@ function FavoritesComponent() {
                   </IconButton>
                 </CardActions>
               )}
-
             </Card>
           </Grid>
         ))}
@@ -281,7 +277,7 @@ function FavoritesComponent() {
                   height: "400px",
                   maxHeight: "400px",
                   minHeight: "400px",
-                  objectFit: "cover",
+                  objectFit: "contain",
                   borderRadius: "8px",
                 }}
               />
@@ -322,14 +318,25 @@ function FavoritesComponent() {
                     {selectedPost.comments.map((comment) => (
                       <ListItem key={comment.id}>
                         <ListItemAvatar>
-                          <Avatar src={comment.user_image || "https://picsum.photos/100"} />
+                          <Avatar
+                            src={
+                              comment.user_image || "https://picsum.photos/100"
+                            }
+                          />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={comment.username === currentUsername ? "Você" : comment.username || "Anônimo"}
+                          primary={
+                            comment.username === currentUsername
+                              ? "Você"
+                              : comment.username || "Anônimo"
+                          }
                           secondary={comment.content}
                         />
-                        <IconButton onClick={() => handleLikeComment(comment.id)}>
-                          {likedComments[comment.id] || comment.liked_by_user ? (
+                        <IconButton
+                          onClick={() => handleLikeComment(comment.id)}
+                        >
+                          {likedComments[comment.id] ||
+                          comment.liked_by_user ? (
                             <FavoriteIcon sx={{ color: "red" }} />
                           ) : (
                             <FavoriteBorderIcon />
@@ -337,10 +344,12 @@ function FavoritesComponent() {
                         </IconButton>
                       </ListItem>
                     ))}
-
                   </List>
                 ) : (
-                  <Typography variant="body2" sx={{ textAlign: "center", mt: 2, flexGrow: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ textAlign: "center", mt: 2, flexGrow: 1 }}
+                  >
                     Sem comentários ainda.
                   </Typography>
                 )}
@@ -375,11 +384,6 @@ function FavoritesComponent() {
           </Box>
         )}
       </Dialog>
-
-
-
-
-
     </>
   );
 }

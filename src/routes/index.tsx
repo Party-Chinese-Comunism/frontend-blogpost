@@ -8,7 +8,7 @@ import {
   CardContent,
   Typography,
   CardActions,
-  Grid,
+  Grid2,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -20,6 +20,7 @@ import {
   TextField,
   Button,
   CircularProgress,
+  Grid,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close"; // Ícone de fechar modal
 import { red } from "@mui/material/colors";
@@ -104,7 +105,7 @@ function HomeComponent() {
       { commentId },
       {
         onSuccess: () => {
-          refetch(); 
+          refetch();
         },
       }
     );
@@ -121,6 +122,7 @@ function HomeComponent() {
     <>
       <Grid
         container
+        display={"flex"}
         direction="column"
         alignItems="center"
         spacing={2}
