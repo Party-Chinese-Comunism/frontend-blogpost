@@ -19,37 +19,45 @@ import {
   Box,
   TextField,
   Button,
+  CircularProgress,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close"; // Ícone de fechar modal
 import { red } from "@mui/material/colors";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import CommentIcon from "@mui/icons-material/Comment";
 import { useState } from "react";
 import { useListAllPosts } from "../hooks/usePosts/useListAllPosts";
-import { ListMyPostsResponse, Post } from "../types/posts";
+import { Post } from "../types/posts";
 import { useCreateComment } from "../hooks/usePosts/useCreateComment";
 import noImage from "../assets/no-image.png";
 import { useFavoritePost } from "../hooks/usePosts/useFavoritePost";
 import { useLikeComent } from "../hooks/usePosts/useLikeComent";
+import { useListComments } from "../hooks/usePosts/useListComments";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
 function HomeComponent() {
+  const navigate = useNavigate();
+
   const { data = [], isLoading, isError } = useListAllPosts();
   const [newComment, setNewComment] = useState("");
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [open, setOpen] = useState(false);
-  const [likedComments, setLikedComments] = useState<{
-    [key: number]: boolean;
-  }>({});
-  const [favorites, setFavorites] = useState<{ [key: number]: boolean }>({});
   const createCommentMutation = useCreateComment();
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
   const currentUsername = user?.user?.username || "Anônimo";
   const favoritePostMutation = useFavoritePost();
+
+  const {
+    data: comments = [],
+    isLoading: isLoadingComments,
+    refetch,
+  } = useListComments(selectedPost?.id || null);
 
   const handleAddComment = async () => {
     if (!newComment.trim() || !selectedPost) return;
@@ -77,6 +85,7 @@ function HomeComponent() {
           });
 
           setNewComment("");
+          refetch();
         },
         onError: (error) => {
           console.error("Erro ao enviar comentário:", error);
@@ -86,13 +95,11 @@ function HomeComponent() {
   };
 
   const handleFavoriteClick = (postId: number) => {
-    setFavorites((prev) => ({ ...prev, [postId]: !prev[postId] }));
-
     favoritePostMutation.mutate(
       { postId },
       {
         onError: () => {
-          setFavorites((prev) => ({ ...prev, [postId]: !prev[postId] }));
+          console.error("Erro ao favoritar post");
         },
       }
     );
@@ -193,16 +200,24 @@ function HomeComponent() {
               <CardHeader
                 avatar={
                   <Avatar
-                    src={item?.profile_image || "https://picsum.photos/100"}
-                    sx={{ bgcolor: red[500] }}
-                    aria-label="user"
+                    src={item?.author_image || "https://picsum.photos/100"}
+                    sx={{ bgcolor: red[500], cursor: "pointer" }}
+                    onClick={() => navigate({ to: `/user/${item.user_id}` })}
                   >
                     {item?.author?.charAt(0).toUpperCase() || "U"}
                   </Avatar>
                 }
-                title={truncateText(item?.author || "Usuário Desconhecido", 30)}
+                title={
+                  <Typography
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => navigate({ to: `/user/${item.user_id}` })}
+                  >
+                    {truncateText(item?.author || "Usuário Desconhecido", 30)}
+                  </Typography>
+                }
                 subheader={truncateText(item.title || "", 50)}
               />
+
               <CardMedia
                 component="img"
                 image={item.image_url || noImage}
@@ -215,40 +230,13 @@ function HomeComponent() {
                 }}
               />
               <CardContent>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Typography variant="body1" fontWeight="bold">
-                    {truncateText(item?.author, 25)}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      flexGrow: 1,
-                    }}
-                  >
-                    {truncateText(
-                      item.description || "Nenhuma descrição disponível.",
-                      50
-                    )}
-                  </Typography>
-                </Box>
                 <Typography
                   variant="body2"
                   sx={{ color: "gray", cursor: "pointer", mt: 1 }}
                   onClick={() => handleOpenComments(item)}
                 >
-                  {item.comments?.length
-                    ? `Ver todos os ${item.comments.length} comentários`
+                  {item.comments_number
+                    ? `Ver todos os ${item.comments_number} comentários`
                     : "Sem comentários ainda"}
                 </Typography>
               </CardContent>
@@ -277,26 +265,31 @@ function HomeComponent() {
             sx={{
               display: "flex",
               flexDirection: { xs: "column", md: "row" },
-              height: "700px",
+              height: "auto",
               padding: 2,
-              overflow: "hidden",
+              position: "relative",
             }}
           >
+            <IconButton
+              onClick={handleClose}
+              sx={{ position: "absolute", top: 10, right: 10 }}
+            >
+              <CloseIcon />
+            </IconButton>
+
             <Box
               sx={{
-                flex: { xs: "1 1 auto", md: "3 3 auto" },
+                flex: { xs: "none", md: "3 3 auto" },
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 padding: 2,
-                minHeight: "300px",
               }}
             >
               <img
                 src={selectedPost?.image_url || noImage}
                 style={{
                   width: "100%",
-                  height: "400px",
                   maxHeight: "400px",
                   minHeight: "400px",
                   objectFit: "contain",
@@ -312,14 +305,12 @@ function HomeComponent() {
                 display: { xs: "none", md: "block" },
               }}
             />
-
             <Box
               sx={{
-                flex: { xs: "1 1 auto", md: "2 2 auto" },
+                flex: { xs: "none", md: "2 2 auto" },
                 display: "flex",
                 flexDirection: "column",
                 padding: 2,
-                height: "100%",
               }}
             >
               <DialogTitle>Comentários</DialogTitle>
@@ -335,9 +326,11 @@ function HomeComponent() {
                   paddingBottom: "80px",
                 }}
               >
-                {selectedPost?.comments.length > 0 ? (
-                  <List sx={{ flexGrow: 1 }}>
-                    {selectedPost.comments.map((comment) => (
+                {isLoadingComments ? (
+                  <CircularProgress />
+                ) : comments.length > 0 ? (
+                  <List>
+                    {comments.map((comment) => (
                       <ListItem key={comment.id}>
                         <ListItemAvatar>
                           <Avatar
