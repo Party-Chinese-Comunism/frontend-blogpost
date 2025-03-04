@@ -3,6 +3,7 @@ import { JSX } from "react";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import SummarizeIcon from "@mui/icons-material/Summarize";
+import ChatIcon from "@mui/icons-material/Chat";
 type AppRoutePaths = FileRoutesByPath[keyof FileRoutesByPath]["path"];
 
 export interface SidebarItem {
@@ -30,5 +31,10 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     label: "Favoritos",
     icon: <SummarizeIcon />,
     path: "/favorites",
+  },
+  {
+    label: "Chat",
+    icon: <ChatIcon />,
+    path: "/chat",
   },
 ];
