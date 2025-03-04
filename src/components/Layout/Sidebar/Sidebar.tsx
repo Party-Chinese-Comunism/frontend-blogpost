@@ -143,6 +143,8 @@ const Sidebar = () => {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
+          height: "100vh",
+          overflowY: "auto",
         },
       }}
     >

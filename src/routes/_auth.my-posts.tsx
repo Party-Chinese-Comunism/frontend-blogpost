@@ -21,10 +21,19 @@ export const Route = createFileRoute("/_auth/my-posts")({
 });
 
 function RouteComponent() {
+  const { data = [], isLoading, isError } = useListMyPosts();
   const { data: myPosts } = useListMyPosts();
   const truncateText = (text = "", maxLength: number) => {
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
+
+  if (!isLoading && data.length === 0) {
+    return (
+      <Typography variant="h6" align="center" sx={{ marginTop: 4 }}>
+        Não temos posts!
+      </Typography>
+    );
+  }
 
   return (
     <Grid2

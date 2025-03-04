@@ -6,4 +6,4 @@ export const useListMyPosts = () => {
     queryKey: ["useListMyPosts"],
     queryFn: listMyPosts,
   });
-};
+}; 
