@@ -51,6 +51,7 @@ function RootComponent() {
           flexGrow: 1,
           p: 3,
           height: "100vh",
+          overflowY: "auto",
           transition: theme.transitions.create("margin", {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
