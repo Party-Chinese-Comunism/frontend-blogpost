@@ -5,5 +5,7 @@ export const useSearchUsersByName = (name: string) => {
   return useQuery({
     queryKey: ["useListUsersById", name],
     queryFn: () => searchUsersByName(name),
+    enabled: !!name,
+    refetchOnWindowFocus: false,
   });
 };

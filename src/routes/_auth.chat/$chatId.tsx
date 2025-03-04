@@ -1,6 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useAuth } from "../../context/auth";
+// src/routes/_auth/chat/$chatId.tsx
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { User } from "firebase/auth";
+import { auth } from "../../firebase";
 import ChatRoom from "./-components/ChatRoom";
+import { Button } from "@mui/material";
 
 export const Route = createFileRoute("/_auth/chat/$chatId")({
   component: RouteComponent,
@@ -8,15 +12,39 @@ export const Route = createFileRoute("/_auth/chat/$chatId")({
 
 function RouteComponent() {
   const { chatId } = Route.useParams();
-  const auth = useAuth();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setCurrentUser(user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div>Carregando...</div>;
+  }
+
+  if (!currentUser) {
+    return <div>Usuário não autenticado</div>;
+  }
 
   return (
     <div>
-      <h1>Chat - {chatId}</h1>
-      <ChatRoom
-        chatId={chatId}
-        currentUserId={auth.user?.id.toString() as string}
-      />
+      <Button
+        variant="contained"
+        component={Link}
+        to={"/chat"}
+        sx={{
+          mb: 2,
+        }}
+      >
+        Voltar
+      </Button>
+      <ChatRoom chatId={chatId} currentUserId={currentUser.uid} />
     </div>
   );
 }

@@ -13,6 +13,7 @@ interface Message {
   text: string;
   senderId: string;
   createdAt: Timestamp;
+  senderUserName: string;
 }
 
 export function useChatMessages(chatId: string) {
