@@ -20,6 +20,7 @@ import {
   TextField,
   Button,
   CircularProgress,
+  Grid,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close"; // Ícone de fechar modal
 import { red } from "@mui/material/colors";
@@ -66,24 +67,6 @@ function HomeComponent() {
       { postId: selectedPost.id, content: newComment },
       {
         onSuccess: () => {
-          setSelectedPost((prev) => {
-            if (!prev) return prev;
-
-            return {
-              ...prev,
-              comments: [
-                ...(prev.comments || []),
-                {
-                  id: Date.now(),
-                  username: currentUsername,
-                  content: newComment,
-                  user_image: "https://picsum.photos/100",
-                  liked_by_user: false,
-                },
-              ],
-            };
-          });
-
           setNewComment("");
           refetch();
         },
@@ -118,35 +101,11 @@ function HomeComponent() {
   const likeCommentMutation = useLikeComent();
 
   const handleLikeComment = (commentId: number) => {
-    setSelectedPost((prev) => {
-      if (!prev) return prev;
-
-      return {
-        ...prev,
-        comments: prev.comments.map((comment) =>
-          comment.id === commentId
-            ? { ...comment, liked_by_user: !comment.liked_by_user }
-            : comment
-        ),
-      };
-    });
-
     likeCommentMutation.mutate(
       { commentId },
       {
-        onError: () => {
-          setSelectedPost((prev) => {
-            if (!prev) return prev;
-
-            return {
-              ...prev,
-              comments: prev.comments.map((comment) =>
-                comment.id === commentId
-                  ? { ...comment, liked_by_user: !comment.liked_by_user }
-                  : comment
-              ),
-            };
-          });
+        onSuccess: () => {
+          refetch();
         },
       }
     );
@@ -159,33 +118,24 @@ function HomeComponent() {
   if (isLoading) return <Typography>Carregando...</Typography>;
   if (isError) return <Typography>Erro ao carregar os posts.</Typography>;
 
-  if (!isLoading && data.length === 0) {
-    return (
-      <Typography variant="h6" align="center" sx={{ marginTop: 4 }}>
-        Não temos posts!
-      </Typography>
-    );
-  }
-
   return (
     <>
-      <Grid2
+      <Grid
         container
         display={"flex"}
         direction="column"
         alignItems="center"
         spacing={2}
-        sx={{ padding: "20px", minHeight: "100vh", height: "auto" }}
+        sx={{ padding: "20px", minHeight: "100vh" }}
       >
-        {data.map((item, index) => (
-          <Grid2
-            size={{
-              xs: 12,
-              sm: 10,
-              md: 8,
-              lg: 6,
-            }}
-            key={index}
+        {data.map((item) => (
+          <Grid
+            item
+            xs={12}
+            sm={10}
+            md={8}
+            lg={6}
+            key={item.id}
             sx={{ width: "100%" }}
           >
             <Card
@@ -240,25 +190,32 @@ function HomeComponent() {
                     : "Sem comentários ainda"}
                 </Typography>
               </CardContent>
-              {user && (
-                <CardActions>
-                  <IconButton onClick={() => handleFavoriteClick(item.id)}>
-                    {item.favorited_by_user ? (
-                      <FavoriteIcon sx={{ color: "red" }} />
-                    ) : (
-                      <FavoriteBorderIcon />
-                    )}
-                  </IconButton>
+              <CardActions
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                }}
+              >
+                <IconButton onClick={() => handleFavoriteClick(item.id)}>
+                  {item.favorited_by_user ? (
+                    <FavoriteIcon sx={{ color: "red" }} />
+                  ) : (
+                    <FavoriteBorderIcon />
+                  )}
+                </IconButton>
+                <Typography variant="body2">{item.favorite_number}</Typography>
 
-                  <IconButton onClick={() => handleOpenComments(item)}>
-                    <CommentIcon />
-                  </IconButton>
-                </CardActions>
-              )}
+                <IconButton onClick={() => handleOpenComments(item)}>
+                  <CommentIcon />
+                </IconButton>
+                <Typography variant="body2">{item.comments_number}</Typography>
+              </CardActions>
             </Card>
-          </Grid2>
+          </Grid>
         ))}
-      </Grid2>
+      </Grid>
+
       <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
         {selectedPost && (
           <Box
@@ -291,8 +248,7 @@ function HomeComponent() {
                 style={{
                   width: "100%",
                   maxHeight: "400px",
-                  minHeight: "400px",
-                  objectFit: "contain",
+                  objectFit: "cover",
                   borderRadius: "8px",
                 }}
               />
@@ -347,15 +303,6 @@ function HomeComponent() {
                           }
                           secondary={comment.content}
                         />
-                        <IconButton
-                          onClick={() => handleLikeComment(comment.id)}
-                        >
-                          {comment.liked_by_user ? (
-                            <FavoriteIcon sx={{ color: "red" }} />
-                          ) : (
-                            <FavoriteBorderIcon />
-                          )}
-                        </IconButton>
                       </ListItem>
                     ))}
                   </List>
