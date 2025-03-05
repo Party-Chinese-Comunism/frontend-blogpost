@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
@@ -31,7 +32,8 @@ export const Header = () => {
   const theme = useTheme();
   const effectiveSidebarWidth = isMobile ? 240 : collapsed ? 0 : 240;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [file, setFile] = useState<string | null>(null);
+  const [file, setFile,] = useState<string | null>(null);
+  const [hover, setHover] = useState(false);
   const handleOpenProfile = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
@@ -101,17 +103,7 @@ export const Header = () => {
             <MenuIcon sx={{ color: "white" }} />
           </IconButton>
         )}
-        <Link to="/">
-          <Box
-            component={"img"}
-            src={logo}
-            alt="logo"
-            sx={{
-              height: 40,
-              width: 40,
-            }}
-          ></Box>
-        </Link>
+
         <Box sx={{ flexGrow: 1 }} />
 
         {isAuthenticated ? (
@@ -134,14 +126,33 @@ export const Header = () => {
             variant="outlined"
             onClick={handleOpenProfile}
           >
-            <AccountCircle
-              sx={{
-                mr: {
-                  xs: 0,
-                  md: 1,
-                },
-              }}
-            />
+
+            {file && typeof file === "string" ? (
+              <img
+                src={file}
+                alt="Profile"
+                style={{
+                  width: 25,
+                  height: 25,
+                  borderRadius: "50%",
+                  marginRight: 8,
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                }}
+              />
+            ) : (
+              <AccountCircle
+                sx={{
+                  mr: {
+                    xs: 0,
+                    md: 1,
+                  },
+                }}
+              />
+            )}
+
             {!isMobile && user?.username}
           </Button>
         ) : (
@@ -192,16 +203,54 @@ export const Header = () => {
                 justifyContent="space-between"
               >
                 <Box display="flex" alignItems={"center"} gap={2}>
-
-                  <label htmlFor="profile-upload">
-
-                    {file ? <img src={file} alt="Profile" style={{ width: 50, height: 50, borderRadius: '50%' }} /> :
+                  <label
+                    htmlFor="profile-upload"
+                    style={{
+                      position: "relative",
+                      display: "inline-block",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={() => setHover(true)}
+                    onMouseLeave={() => setHover(false)}
+                  >
+                    {/* Imagem ou Ícone de Perfil */}
+                    {file ? (
+                      <img
+                        src={file}
+                        alt="Profile"
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    ) : (
                       <IconButton color="primary" component="span">
-                        <PersonOutlineOutlinedIcon />
+                        <PersonOutlineOutlinedIcon sx={{ fontSize: 50 }} />
                       </IconButton>
+                    )}
 
-                    }
-
+                    {/* Ícone de Câmera Aparece no Hover */}
+                    {hover && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: "50%",
+                          backgroundColor: "rgba(0, 0, 0, 0.5)", // Fundo escurecido
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <PhotoCameraIcon sx={{ color: "white", fontSize: 24 }} />
+                      </Box>
+                    )}
                   </label>
 
                   <Input
