@@ -5,17 +5,14 @@ import {
   Toolbar,
   useTheme,
   Button,
-  Tooltip,
-  CircularProgress,
   Popper,
   Paper,
   ClickAwayListener,
   IconButton,
   Box,
-  Avatar,
+  Input,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -24,6 +21,9 @@ import { useAuth } from "../../../context/auth";
 import { useLayout } from "../../../context/layoutContext";
 import { Link } from "@tanstack/react-router";
 import logo from "../../../assets/logo.png";
+import { changeProfilePicture } from "../../../service/profile/profile";
+import { useEffect } from "react";
+import { getProfilePicture } from "../../../service/profile/profile";
 
 export const Header = () => {
   const { collapsed, isMobile, handleToggleSidebar } = useLayout();
@@ -31,12 +31,36 @@ export const Header = () => {
   const theme = useTheme();
   const effectiveSidebarWidth = isMobile ? 240 : collapsed ? 0 : 240;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [file, setFile] = useState<string | null>(null);
   const handleOpenProfile = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
   const handleCloseProfile = () => {
     setAnchorEl(null);
+  };
+
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      console.log(user);
+      if (user) {
+        const profilePic = await getProfilePicture(user.id);
+        if (profilePic.image_url) {
+          setFile(profilePic.image_url);
+        }
+      }
+    };
+
+    fetchProfilePicture();
+  }, [user]);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+    const uploadedFile = event.target.files ? event.target.files[0] : null;
+    if (uploadedFile) {
+      setFile(URL.createObjectURL(uploadedFile));
+      changeProfilePicture(uploadedFile);
+    }
   };
 
   const open = Boolean(anchorEl);
@@ -168,9 +192,24 @@ export const Header = () => {
                 justifyContent="space-between"
               >
                 <Box display="flex" alignItems={"center"} gap={2}>
-                  <PersonOutlineOutlinedIcon
-                    color="primary"
-                    fontSize={"large"}
+
+                  <label htmlFor="profile-upload">
+
+                    {file ? <img src={file} alt="Profile" style={{ width: 50, height: 50, borderRadius: '50%' }} /> :
+                      <IconButton color="primary" component="span">
+                        <PersonOutlineOutlinedIcon />
+                      </IconButton>
+
+                    }
+
+                  </label>
+
+                  <Input
+                    id="profile-upload"
+                    type="file"
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
+                    inputProps={{ accept: "image/*" }}
                   />
 
                   <Box>
