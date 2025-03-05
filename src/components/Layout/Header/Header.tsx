@@ -5,18 +5,16 @@ import {
   Toolbar,
   useTheme,
   Button,
-  Tooltip,
-  CircularProgress,
   Popper,
   Paper,
   ClickAwayListener,
   IconButton,
   Box,
-  Avatar,
+  Input,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
@@ -24,6 +22,9 @@ import { useAuth } from "../../../context/auth";
 import { useLayout } from "../../../context/layoutContext";
 import { Link } from "@tanstack/react-router";
 import logo from "../../../assets/logo.png";
+import { changeProfilePicture } from "../../../service/profile/profile";
+import { useEffect } from "react";
+import { getProfilePicture } from "../../../service/profile/profile";
 
 export const Header = () => {
   const { collapsed, isMobile, handleToggleSidebar } = useLayout();
@@ -31,12 +32,37 @@ export const Header = () => {
   const theme = useTheme();
   const effectiveSidebarWidth = isMobile ? 240 : collapsed ? 0 : 240;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [file, setFile,] = useState<string | null>(null);
+  const [hover, setHover] = useState(false);
   const handleOpenProfile = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
   const handleCloseProfile = () => {
     setAnchorEl(null);
+  };
+
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      console.log(user);
+      if (user) {
+        const profilePic = await getProfilePicture(user.id);
+        if (profilePic.image_url) {
+          setFile(profilePic.image_url);
+        }
+      }
+    };
+
+    fetchProfilePicture();
+  }, [user]);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+    const uploadedFile = event.target.files ? event.target.files[0] : null;
+    if (uploadedFile) {
+      setFile(URL.createObjectURL(uploadedFile));
+      changeProfilePicture(uploadedFile);
+    }
   };
 
   const open = Boolean(anchorEl);
@@ -77,17 +103,7 @@ export const Header = () => {
             <MenuIcon sx={{ color: "white" }} />
           </IconButton>
         )}
-        <Link to="/">
-          <Box
-            component={"img"}
-            src={logo}
-            alt="logo"
-            sx={{
-              height: 40,
-              width: 40,
-            }}
-          ></Box>
-        </Link>
+
         <Box sx={{ flexGrow: 1 }} />
 
         {isAuthenticated ? (
@@ -110,14 +126,33 @@ export const Header = () => {
             variant="outlined"
             onClick={handleOpenProfile}
           >
-            <AccountCircle
-              sx={{
-                mr: {
-                  xs: 0,
-                  md: 1,
-                },
-              }}
-            />
+
+            {file && typeof file === "string" ? (
+              <img
+                src={file}
+                alt="Profile"
+                style={{
+                  width: 25,
+                  height: 25,
+                  borderRadius: "50%",
+                  marginRight: 8,
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                }}
+              />
+            ) : (
+              <AccountCircle
+                sx={{
+                  mr: {
+                    xs: 0,
+                    md: 1,
+                  },
+                }}
+              />
+            )}
+
             {!isMobile && user?.username}
           </Button>
         ) : (
@@ -168,9 +203,62 @@ export const Header = () => {
                 justifyContent="space-between"
               >
                 <Box display="flex" alignItems={"center"} gap={2}>
-                  <PersonOutlineOutlinedIcon
-                    color="primary"
-                    fontSize={"large"}
+                  <label
+                    htmlFor="profile-upload"
+                    style={{
+                      position: "relative",
+                      display: "inline-block",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={() => setHover(true)}
+                    onMouseLeave={() => setHover(false)}
+                  >
+                    {/* Imagem ou Ícone de Perfil */}
+                    {file ? (
+                      <img
+                        src={file}
+                        alt="Profile"
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    ) : (
+                      <IconButton color="primary" component="span">
+                        <PersonOutlineOutlinedIcon sx={{ fontSize: 50 }} />
+                      </IconButton>
+                    )}
+
+                    {/* Ícone de Câmera Aparece no Hover */}
+                    {hover && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: "50%",
+                          backgroundColor: "rgba(0, 0, 0, 0.5)", // Fundo escurecido
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <PhotoCameraIcon sx={{ color: "white", fontSize: 24 }} />
+                      </Box>
+                    )}
+                  </label>
+
+                  <Input
+                    id="profile-upload"
+                    type="file"
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
+                    inputProps={{ accept: "image/*" }}
                   />
 
                   <Box>
