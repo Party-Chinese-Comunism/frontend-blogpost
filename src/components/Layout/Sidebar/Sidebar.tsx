@@ -11,6 +11,7 @@ import {
   ListItemText,
   Collapse,
   Chip,
+  Typography,
 } from "@mui/material";
 import { useEffect } from "react";
 import logo from "../../../assets/logo.png";
@@ -150,11 +151,25 @@ const Sidebar = () => {
     >
       <Box my={1} component={Link} to="/">
         <Box
-          component="img"
-          src={logo}
-          alt="Logo"
-          sx={{ width: "100%", objectFit: "contain", height: 50 }}
-        />
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: theme.palette.common.white,
+            width: "100%",
+            gap: 1,
+          }}
+        >
+          <Box
+            component="img"
+            src={logo}
+            alt="Logo"
+            sx={{ objectFit: "contain", height: 50 }}
+          />
+          <Typography variant="h6" component="div">
+            Iris
+          </Typography>
+        </Box>
       </Box>
       <List>{renderSidebarItems(SIDEBAR_ITEMS)}</List>
     </Drawer>
