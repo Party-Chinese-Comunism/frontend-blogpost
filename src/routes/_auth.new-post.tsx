@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm, SubmitHandler } from "react-hook-form";
 import {
   Box,
@@ -25,7 +25,7 @@ function NewPostPage() {
   const theme = useTheme();
   const { mutate: createPost, isPending: isLoading } = useCreatePost();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -49,6 +49,9 @@ function NewPostPage() {
       onSuccess: () => {
         reset();
         setPreviewImage(null);
+        navigate({
+          to: "/",
+        });
       },
     });
   };

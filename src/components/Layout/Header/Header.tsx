@@ -21,7 +21,6 @@ import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined
 import { useAuth } from "../../../context/auth";
 import { useLayout } from "../../../context/layoutContext";
 import { Link } from "@tanstack/react-router";
-import logo from "../../../assets/logo.png";
 import { changeProfilePicture } from "../../../service/profile/profile";
 import { useEffect } from "react";
 import { getProfilePicture } from "../../../service/profile/profile";
@@ -32,7 +31,7 @@ export const Header = () => {
   const theme = useTheme();
   const effectiveSidebarWidth = isMobile ? 240 : collapsed ? 0 : 240;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [file, setFile,] = useState<string | null>(null);
+  const [file, setFile] = useState<string | null>(null);
   const [hover, setHover] = useState(false);
   const handleOpenProfile = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -44,7 +43,6 @@ export const Header = () => {
 
   useEffect(() => {
     const fetchProfilePicture = async () => {
-      console.log(user);
       if (user) {
         const profilePic = await getProfilePicture(user.id);
         if (profilePic.image_url) {
@@ -57,7 +55,6 @@ export const Header = () => {
   }, [user]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-
     const uploadedFile = event.target.files ? event.target.files[0] : null;
     if (uploadedFile) {
       setFile(URL.createObjectURL(uploadedFile));
@@ -70,15 +67,17 @@ export const Header = () => {
   return (
     <AppBar
       position="fixed"
+      elevation={0}
       sx={{
         background: theme.palette.primary.main,
         zIndex: theme.zIndex.drawer + 1,
+        boxShadow: "0px",
         ml: !isAuthenticated ? 0 : isMobile ? 0 : `${effectiveSidebarWidth}px`,
         width: !isAuthenticated
           ? "100%"
           : isMobile
             ? "100%"
-            : `calc(100% - ${effectiveSidebarWidth}px)`,
+            : `calc(100% - ${effectiveSidebarWidth - 3}px)`,
         transition: theme.transitions.create(["margin", "width"], {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.leavingScreen,
@@ -126,7 +125,6 @@ export const Header = () => {
             variant="outlined"
             onClick={handleOpenProfile}
           >
-
             {file && typeof file === "string" ? (
               <img
                 src={file}
@@ -193,7 +191,7 @@ export const Header = () => {
                 mt: 1,
                 p: 2,
                 width: 250,
-                boxShadow: 3,
+                boxShadow: "none",
                 backgroundColor: "#FFFFFF",
               }}
             >
@@ -248,7 +246,9 @@ export const Header = () => {
                           justifyContent: "center",
                         }}
                       >
-                        <PhotoCameraIcon sx={{ color: "white", fontSize: 24 }} />
+                        <PhotoCameraIcon
+                          sx={{ color: "white", fontSize: 24 }}
+                        />
                       </Box>
                     )}
                   </label>
@@ -256,7 +256,7 @@ export const Header = () => {
                   <Input
                     id="profile-upload"
                     type="file"
-                    style={{ display: 'none' }}
+                    style={{ display: "none" }}
                     onChange={handleFileChange}
                     inputProps={{ accept: "image/*" }}
                   />

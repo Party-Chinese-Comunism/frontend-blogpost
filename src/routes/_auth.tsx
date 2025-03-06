@@ -1,4 +1,6 @@
+import { Fab } from "@mui/material";
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import AddIcon from "@mui/icons-material/Add";
 
 export const Route = createFileRoute("/_auth")({
   beforeLoad: ({ context, location }) => {
@@ -15,5 +17,9 @@ export const Route = createFileRoute("/_auth")({
 });
 
 function AuthLayout() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+    </>
+  );
 }

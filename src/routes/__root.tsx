@@ -22,6 +22,7 @@ import {
   useMediaQuery,
   Theme,
   useTheme,
+  Fab,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import logo from "../assets/logo.png";
@@ -29,6 +30,7 @@ import { AuthContextValue, useAuth } from "../context/auth";
 import theme from "../theme/theme";
 import { Header } from "../components/Layout/Header/Header";
 import Sidebar from "../components/Layout/Sidebar/Sidebar";
+import AddIcon from "@mui/icons-material/Add";
 
 interface MyRouterContext {
   auth: AuthContextValue;
@@ -61,6 +63,19 @@ function RootComponent() {
         <Toolbar />
         <Outlet />
       </Box>
+      <Fab
+        component={Link}
+        to="/new-post"
+        sx={{
+          position: "absolute",
+          right: 24,
+          bottom: 14,
+        }}
+        color="primary"
+        aria-label="add"
+      >
+        <AddIcon />
+      </Fab>
     </Box>
   );
 }
