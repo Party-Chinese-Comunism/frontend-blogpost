@@ -1,23 +1,26 @@
-# Use an official Node.js runtime as a parent image
+# Use uma imagem base do Node.js 18
 FROM node:18-alpine
 
-# Set the working directory in the container
+# Defina o diretório de trabalho
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
+# Copie os arquivos de dependência
 COPY package*.json ./
 
-# Install dependencies
+# Instale as dependências
 RUN npm install
 
-# Copy the rest of the application code to the working directory
+# Copie o restante do código-fonte
 COPY . .
 
-# Build the application
+# Construa o projeto
 RUN npm run build
 
-# Expose the port the app runs on
+# Instale o serve globalmente
+RUN npm install -g serve
+
+# Exponha a porta 3000
 EXPOSE 3000
 
-# Command to run the application
-CMD ["npm", "run", "serve"]
+# Comando para servir a pasta de build na porta 3000
+CMD ["serve", "-s", "build", "-l", "3000"]
