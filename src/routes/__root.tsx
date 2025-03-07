@@ -68,8 +68,8 @@ function RootComponent() {
         to="/new-post"
         sx={{
           position: "absolute",
-          right: 24,
-          bottom: 14,
+          right: 45,
+          bottom: 30,
         }}
         color="primary"
         aria-label="add"
