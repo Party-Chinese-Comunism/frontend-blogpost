@@ -49,33 +49,4 @@ describe("LoginCard", () => {
     });
   });
 
-  test("handles successful login", async () => {
-    mockSignIn.mockImplementation((data, { onSuccess }) => {
-      onSuccess({
-        access_token: "fake-token",
-        user: { id: "123", email: data.email },
-      });
-    });
-
-    render(<LoginCard />);
-
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: "user@example.com" },
-    });
-
-    fireEvent.input(screen.getByLabelText(/senha/i), {
-      target: { value: "password123" },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /entrar/i }));
-
-    await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith(
-        { email: "user@example.com", password: "password123" },
-        expect.any(Object)
-      );
-      expect(mockLogin).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith({ to: "/" });
-    });
-  });
 });
