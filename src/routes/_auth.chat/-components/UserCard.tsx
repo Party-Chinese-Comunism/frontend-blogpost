@@ -22,7 +22,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
           <CardMedia
             component="img"
             height="140"
-            image={`${baseUrl}/${user.user_image}`}
+            image={`${user.user_image}`}
             alt={user.username}
           />
         ) : (
