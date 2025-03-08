@@ -1,4 +1,3 @@
-// src/components/SendMessageForm.tsx
 import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -36,14 +35,12 @@ async function sendMessage({
 }) {
   if (!text.trim()) throw new Error("Mensagem vazia");
 
-  // Verificar se o chat existe
   const chatRef = doc(db, "chats", chatId);
   const chatSnap = await getDoc(chatRef);
   if (!chatSnap.exists()) {
     throw new Error("Conversa não encontrada");
   }
 
-  // Obter dados do usuário
   const userRef = doc(db, "users", currentUserId);
   const userSnap = await getDoc(userRef);
   if (!userSnap.exists()) {
@@ -55,7 +52,6 @@ async function sendMessage({
     throw new Error("Username não configurado");
   }
 
-  // Adicionar mensagem
   return await addDoc(collection(db, "chats", chatId, "messages"), {
     text: text.trim(),
     senderId: currentUserId,
@@ -97,8 +93,10 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({
       sx={{
         p: 2,
         pt: 1,
-        bgcolor: "background.paper",
+        bgcolor: "#1e1e1e",
         borderTop: `1px solid ${theme.palette.divider}`,
+        borderRadius:5,
+        margin:1
       }}
     >
       <Box
@@ -119,8 +117,13 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: "24px",
-              bgcolor: "background.paper",
+              bgcolor: "#2a2a2a",
+              color: "#ffffff",
+              "& fieldset": { borderColor: "#444" },
+              "&:hover fieldset": { borderColor: "#555" },
+              "&.Mui-focused fieldset": { borderColor: theme.palette.primary.main },
             },
+            input: { color: "#ffffff" },
           }}
           autoComplete="off"
         />
@@ -133,14 +136,12 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({
             height: 48,
             width: 48,
             flexShrink: 0,
-            bgcolor: "primary.main",
-            color: "primary.contrastText",
-            "&:hover": {
-              bgcolor: "primary.dark",
-            },
+            bgcolor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
+            "&:hover": { bgcolor: theme.palette.primary.dark },
             "&:disabled": {
-              bgcolor: "action.disabledBackground",
-              color: "action.disabled",
+              bgcolor: theme.palette.action.disabledBackground,
+              color: theme.palette.action.disabled,
             },
           }}
         >

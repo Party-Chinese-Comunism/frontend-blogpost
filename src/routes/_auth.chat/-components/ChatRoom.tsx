@@ -1,7 +1,6 @@
-// src/components/ChatRoom.tsx
-import React, { useEffect, useRef } from "react";
-import { useChatMessages } from "../../../hooks/useChat/useChatMessages";
-import SendMessageForm from "./SendMessageForm";
+import React, { useEffect, useRef } from 'react';
+import { useChatMessages } from '../../../hooks/useChat/useChatMessages';
+import SendMessageForm from './SendMessageForm';
 import {
   Box,
   Avatar,
@@ -12,9 +11,7 @@ import {
   Typography,
   Paper,
   useTheme,
-  Button,
-} from "@mui/material";
-import { Link } from "@tanstack/react-router";
+} from '@mui/material';
 
 interface ChatRoomProps {
   chatId: string;
@@ -26,33 +23,33 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const messages = useChatMessages(chatId);
+
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   }, [messages]);
+
   return (
     <Box
       sx={{
-        height: "70vh",
-        display: "flex",
-        flexDirection: "column",
-        bgcolor: theme.palette.background.default,
+        height: '70vh',
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: '#121212',
+        color: '#ffffff',
       }}
     >
       <Paper
         elevation={0}
         sx={{
           flexGrow: 1,
-          overflowY: "auto",
-          borderRadius: "16px",
+          overflowY: 'auto',
+          borderRadius: '16px',
           m: 2,
           mb: 0,
           p: 2,
-          bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#f5f5f5",
+          bgcolor: '#1e1e1e',
         }}
       >
         <List sx={{ p: 0 }}>
@@ -69,28 +66,26 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
                 <ListItem
                   key={msg.id}
                   sx={{
-                    justifyContent: isCurrentUser ? "flex-end" : "flex-start",
+                    justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
                     px: 1,
                     my: 1,
                   }}
                 >
                   <Box
                     sx={{
-                      display: "flex",
-                      flexDirection: isCurrentUser ? "row-reverse" : "row",
-                      alignItems: "flex-end",
+                      display: 'flex',
+                      flexDirection: isCurrentUser ? 'row-reverse' : 'row',
+                      alignItems: 'flex-end',
                       gap: 1,
-                      maxWidth: "70%",
+                      maxWidth: '70%',
                     }}
                   >
-                    <ListItemAvatar sx={{ minWidth: "40px" }}>
+                    <ListItemAvatar sx={{ minWidth: '40px' }}>
                       <Avatar
                         sx={{
                           width: 32,
                           height: 32,
-                          bgcolor: isCurrentUser
-                            ? theme.palette.primary.main
-                            : theme.palette.secondary.main,
+                          bgcolor: isCurrentUser ? theme.palette.primary.main : theme.palette.secondary.main,
                         }}
                       >
                         {msg.senderUserName.slice(0, 2).toUpperCase()}
@@ -101,13 +96,9 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
                       elevation={0}
                       sx={{
                         p: 1.5,
-                        borderRadius: isCurrentUser
-                          ? "18px 4px 18px 18px"
-                          : "4px 18px 18px 18px",
-                        bgcolor: isCurrentUser
-                          ? theme.palette.primary.main
-                          : theme.palette.background.paper,
-                        color: isCurrentUser ? "#fff" : "text.primary",
+                        borderRadius: isCurrentUser ? '18px 4px 18px 18px' : '4px 18px 18px 18px',
+                        bgcolor: isCurrentUser ? theme.palette.primary.main : '#2a2a2a',
+                        color: isCurrentUser ? '#ffffff' : '#dddddd',
                       }}
                     >
                       <ListItemText
@@ -115,16 +106,12 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, currentUserId }) => {
                         secondary={
                           <Typography
                             variant="caption"
-                            color={
-                              isCurrentUser ? "primary.light" : "text.secondary"
-                            }
-                            sx={{ display: "block", mt: 0.5 }}
+                            color={isCurrentUser ? '#a0c8ff' : 'text.secondary'}
+                            sx={{ display: 'block', mt: 0.5 }}
                           ></Typography>
                         }
                         sx={{ m: 0 }}
-                        primaryTypographyProps={{
-                          sx: { wordBreak: "break-word" },
-                        }}
+                        primaryTypographyProps={{ sx: { wordBreak: 'break-word' } }}
                       />
                     </Paper>
                   </Box>

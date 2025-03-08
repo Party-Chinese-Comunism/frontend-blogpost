@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   CircularProgress,
@@ -12,17 +13,18 @@ import {
   ListItemAvatar,
   ListItemText,
   Divider,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { useAuth } from "../../context/auth";
-import { db } from "../../firebase";
-import { useSearchUsersByName } from "../../hooks/useUsers/useSearchUsersByName";
-import UserCard from "./-components/UserCard";
+  Modal,
+  IconButton,
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
+import { useNavigate, createFileRoute } from '@tanstack/react-router';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useAuth } from '../../context/auth';
+import { db } from '../../firebase';
+import { useSearchUsersByName } from '../../hooks/useUsers/useSearchUsersByName';
 
-export const Route = createFileRoute("/_auth/chat/")({
+export const Route = createFileRoute('/_auth/chat/')({
   component: RouteComponent,
 });
 
@@ -30,7 +32,7 @@ type FirebaseUser = {
   id: string;
   username: string;
   email: string;
-  avatarUrl?: string; // Adicionamos a possibilidade de ter avatar
+  avatarUrl?: string;
 };
 
 type ChatData = {
@@ -43,32 +45,19 @@ function RouteComponent() {
   const theme = useTheme();
   const navigate = useNavigate();
   const auth = useAuth();
-  const [search, setSearch] = useState("");
+
+  const [search, setSearch] = useState('');
   const { data, isLoading } = useSearchUsersByName(search);
   const [firebaseUsers, setFirebaseUsers] = useState<FirebaseUser[]>([]);
-  const [loading, setLoading] = useState(true);
   const [chats, setChats] = useState<ChatData[]>([]);
   const [chatsLoading, setChatsLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      try {
-        const usersCollection = collection(db, "users");
-        const usersSnapshot = await getDocs(usersCollection);
-        const usersList = usersSnapshot.docs.map(
-          (doc) =>
-            ({
-              id: doc.id,
-              ...doc.data(),
-            }) as FirebaseUser
-        );
-
-        setFirebaseUsers(usersList);
-      } catch (error) {
-        console.error("Erro ao buscar usuários:", error);
-      } finally {
-        setLoading(false);
-      }
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+      const usersList = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as FirebaseUser));
+      setFirebaseUsers(usersList);
     };
 
     fetchUsers();
@@ -76,163 +65,101 @@ function RouteComponent() {
 
   useEffect(() => {
     const fetchChats = async () => {
-      if (!auth.user?.email) return;
+      if (!auth.user?.email || firebaseUsers.length === 0) return;
 
-      try {
-        const currentUser = firebaseUsers.find(
-          (user) => user.email === auth.user?.email
-        );
+      const currentUser = firebaseUsers.find(u => u.email === auth.user?.email);
+      if (!currentUser) return;
 
-        if (!currentUser) return;
-        const currentUserId = currentUser.id;
+      const chatsRef = collection(db, 'chats');
+      const chatQuery = query(chatsRef, where('participants', 'array-contains', currentUser.id));
+      const chatSnapshot = await getDocs(chatQuery);
 
-        console.log("🔍 Buscando chats para:", currentUserId);
+      const userChats = chatSnapshot.docs.map(docSnap => {
+        const chat = docSnap.data() as ChatData;
+        const otherUserId = chat.participants.find(id => id !== currentUser.id);
+        const otherUser = firebaseUsers.find(u => u.id === otherUserId);
 
-        const chatsRef = collection(db, "chats");
-        const chatQuery = query(chatsRef, where("participants", "array-contains", currentUserId));
-        const chatSnapshot = await getDocs(chatQuery);
+        return { id: docSnap.id, participants: chat.participants, otherUser };
+      });
 
-        console.log("🔥 Chats encontrados:", chatSnapshot.docs.map(doc => doc.data()));
-
-        const userChats = chatSnapshot.docs.map((docSnap) => {
-          const chat = docSnap.data() as ChatData;
-          const otherUserId = chat.participants.find((id) => id !== currentUserId);
-          const otherUser = firebaseUsers.find((user) => user.id === otherUserId);
-
-          return {
-            id: docSnap.id,
-            participants: chat.participants,
-            otherUser,
-          };
-        });
-
-        setChats(userChats);
-      } catch (error) {
-        console.error("Erro ao buscar os chats:", error);
-      } finally {
-        setChatsLoading(false);
-      }
+      setChats(userChats);
+      setChatsLoading(false);
     };
 
-    if (firebaseUsers.length > 0) {
-      fetchChats();
-    }
+    fetchChats();
   }, [auth.user?.email, firebaseUsers]);
 
   const handleNavigateToChat = (chatId: string) => {
-    navigate({
-      to: "/chat/$chatId",
-      params: { chatId },
-    });
+    navigate({ to: '/chat/$chatId', params: { chatId } });
   };
 
   return (
-    <Grid container spacing={2} sx={{ p: 2 }}>
-      {/* 🔥 Sidebar com a lista de chats */}
-      <Grid item xs={3} sx={{ height: "100vh", borderRight: `1px solid ${theme.palette.divider}`, overflowY: "auto" }}>
-        <Typography variant="h6" sx={{ p: 2 }}>Seus Chats</Typography>
+    <Grid container spacing={2} sx={{ p: 2, bgcolor: '#121212', color: '#ffffff' }}>
+      <Grid item xs={3} sx={{ height: '100vh', borderRight: `1px solid ${theme.palette.divider}`, overflowY: 'auto' }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6" sx={{ p: 2, color: '#ffffff' }}>Seus Chats</Typography>
+          <IconButton onClick={() => setModalOpen(true)} sx={{ color: '#ffffff' }}>
+            <AddIcon />
+          </IconButton>
+        </Box>
         {chatsLoading ? (
-          <CircularProgress sx={{ mx: "auto", display: "block" }} />
+          <CircularProgress sx={{ mx: 'auto', display: 'block', color: '#ffffff' }} />
         ) : chats.length > 0 ? (
           <List>
             {chats.map((chat, index) => (
               <Box key={chat.id}>
-                <ListItem
-                  button
-                  onClick={() => handleNavigateToChat(chat.id)}
-                  sx={{
-                    "&:hover": {
-                      backgroundColor: theme.palette.action.hover,
-                    },
-                  }}
-                >
+                <ListItem button onClick={() => handleNavigateToChat(chat.id)}>
                   <ListItemAvatar>
-                    <Avatar
-                      src={chat.otherUser?.avatarUrl || "https://via.placeholder.com/50"}
-                      sx={{ width: 40, height: 40 }}
-                    />
+                    <Avatar src={chat.otherUser?.avatarUrl || 'https://via.placeholder.com/50'} />
                   </ListItemAvatar>
-                  <ListItemText primary={chat.otherUser?.username || "Usuário Desconhecido"} />
+                  <ListItemText primary={chat.otherUser?.username || 'Usuário Desconhecido'} />
                 </ListItem>
-                {index !== chats.length - 1 && <Divider />}
+                {index !== chats.length - 1 && <Divider sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />}
               </Box>
             ))}
           </List>
         ) : (
-          <Typography sx={{ p: 2 }}>Nenhum chat encontrado.</Typography>
+          <Typography sx={{ p: 2, color: '#ffffff' }}>Nenhum chat encontrado.</Typography>
         )}
       </Grid>
 
-      {/* 🔥 Conteúdo Principal */}
       <Grid item xs={9}>
-        <Typography variant="h4">Chat</Typography>
+        <Typography variant="h4" sx={{ color: '#ffffff' }}>Chat</Typography>
+      </Grid>
 
-        <Grid item xs={12} display="flex" alignItems="center" sx={{ mt: 2 }}>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <Box sx={{ bgcolor: '#1e1e1e', p: 3, borderRadius: 2, width: 400, margin: '10vh auto', color: '#ffffff' }}>
+          <Typography variant="h6" sx={{ mb: 2, color: '#ffffff' }}>Pesquisar Usuários</Typography>
           <TextField
+            fullWidth
             variant="outlined"
             placeholder="Pesquisar usuário"
-            fullWidth
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{
-              mr: 2,
-              backgroundColor: "#fff",
-              borderRadius: 1,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#ccc" },
-                "&:hover fieldset": { borderColor: "#999" },
-                "&.Mui-focused fieldset": { borderColor: "#1976d2" },
-              },
-              "& .MuiInputLabel-root": { color: "#666" },
-              "& .MuiInputBase-input": { color: "#333" },
-            }}
+            onChange={e => setSearch(e.target.value)}
+            InputProps={{ endAdornment: <SearchIcon sx={{ color: '#ffffff' }} /> }}
+            sx={{ input: { color: '#ffffff' }, fieldset: { borderColor: '#ffffff' } }}
           />
-          <Button
-            sx={{
-              height: "100%",
-              background: theme.palette.primary.main,
-              color: theme.palette.primary.contrastText,
-              "&:hover": { background: theme.palette.primary.dark },
-            }}
-            type="button"
-            aria-label="search"
-          >
-            <SearchIcon />
-          </Button>
-        </Grid>
-
-        {/* 🔥 Seção de Pesquisa de Usuários */}
-        <Grid item xs={12} sx={{ mt: 2 }}>
-          <Typography variant="h6">Pesquisar Usuários</Typography>
           {isLoading ? (
-            <CircularProgress />
+            <CircularProgress sx={{ color: '#ffffff' }} />
           ) : data && data.length ? (
-            <Grid container spacing={2}>
-              {data
-                .filter((user) => firebaseUsers.some((u) => u.username === user.username))
-                .map((user) => {
-                  const firebaseUser = firebaseUsers.find((u) => u.username === user.username);
-                  return (
-                    <Grid
-                      key={user.id}
-                      onClick={() => handleNavigateToChat(firebaseUser?.id || "")}
-                      sx={{ cursor: "pointer" }}
-                      item
-                      xs={12}
-                      sm={6}
-                      md={4}
-                      lg={3}
-                    >
-                      <UserCard user={{ ...user, firebaseId: firebaseUser?.id || null }} />
-                    </Grid>
-                  );
-                })}
-            </Grid>
+            <List>
+              {data.filter(user => firebaseUsers.some(u => u.username === user.username)).map(user => {
+                const firebaseUser = firebaseUsers.find(u => u.username === user.username);
+                return (
+                  <ListItem key={user.id} button onClick={() => handleNavigateToChat(firebaseUser?.id || '')}>
+                    <ListItemAvatar>
+                      <Avatar src={firebaseUser?.avatarUrl || 'https://via.placeholder.com/50'} />
+                    </ListItemAvatar>
+                    <ListItemText primary={user.username} secondary={user.email} />
+                  </ListItem>
+                );
+              })}
+            </List>
           ) : (
-            <Typography>Nenhum usuário encontrado.</Typography>
+            <Typography sx={{ mt: 2 }}>Nenhum usuário encontrado.</Typography>
           )}
-        </Grid>
-      </Grid>
+        </Box>
+      </Modal>
     </Grid>
   );
 }
