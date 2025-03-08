@@ -1,13 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { getUserById } from "../../service/user/user";
 
-export const useGetUserById = (userId: number | null) => {
+export const useUserById = (userId?: string) => {
   return useQuery({
     queryKey: ["user", userId],
-    queryFn: async () => {
-      if (!userId) return null;
-      return getUserById(userId);
-    },
+    queryFn: () => userId ? getUserById(userId) : Promise.reject("No user ID"),
     enabled: !!userId, 
   });
 };
