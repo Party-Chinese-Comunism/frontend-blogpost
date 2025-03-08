@@ -1,24 +1,26 @@
-// src/routes/ChatRoute.tsx
 import {
   Button,
   CircularProgress,
   Grid,
-  Grid2,
-  IconButton,
-  InputBase,
   TextField,
   Typography,
   useTheme,
+  Box,
+  Avatar,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Divider,
 } from "@mui/material";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { useAuth } from "../../context/auth";
+import { db } from "../../firebase";
 import { useSearchUsersByName } from "../../hooks/useUsers/useSearchUsersByName";
 import UserCard from "./-components/UserCard";
-import { useAuth } from "../../context/auth";
-import { User } from "firebase/auth";
-import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
-import { db } from "../../firebase";
 
 export const Route = createFileRoute("/_auth/chat/")({
   component: RouteComponent,
@@ -28,6 +30,13 @@ type FirebaseUser = {
   id: string;
   username: string;
   email: string;
+  avatarUrl?: string; // Adicionamos a possibilidade de ter avatar
+};
+
+type ChatData = {
+  id: string;
+  participants: string[];
+  otherUser?: FirebaseUser;
 };
 
 function RouteComponent() {
@@ -38,6 +47,8 @@ function RouteComponent() {
   const { data, isLoading } = useSearchUsersByName(search);
   const [firebaseUsers, setFirebaseUsers] = useState<FirebaseUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [chats, setChats] = useState<ChatData[]>([]);
+  const [chatsLoading, setChatsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -63,147 +74,165 @@ function RouteComponent() {
     fetchUsers();
   }, []);
 
-  const handleNavigateToChat = async (otherUserId: string) => {
-    try {
-      const currentUserId = firebaseUsers.find(
-        (user) => user.email === auth.user?.email
-      )?.id;
-      if (!currentUserId || !otherUserId) return;
+  useEffect(() => {
+    const fetchChats = async () => {
+      if (!auth.user?.email) return;
 
-      // Gera um ID de chat único baseado nos IDs dos usuários
-      const getChatId = (userId1: string, userId2: string) => {
-        const sortedIds = [userId1, userId2].sort();
-        return `${sortedIds[0]}_${sortedIds[1]}`;
-      };
+      try {
+        const currentUser = firebaseUsers.find(
+          (user) => user.email === auth.user?.email
+        );
 
-      const chatId = getChatId(currentUserId, otherUserId);
+        if (!currentUser) return;
+        const currentUserId = currentUser.id;
 
-      // Verifica se o chat já existe no Firestore
-      const chatRef = doc(db, "chats", chatId);
-      const chatSnapshot = await getDoc(chatRef);
+        console.log("🔍 Buscando chats para:", currentUserId);
 
-      // Cria o chat se não existir
-      if (!chatSnapshot.exists()) {
-        await setDoc(chatRef, {
-          participants: [currentUserId, otherUserId],
-          createdAt: new Date(),
+        const chatsRef = collection(db, "chats");
+        const chatQuery = query(chatsRef, where("participants", "array-contains", currentUserId));
+        const chatSnapshot = await getDocs(chatQuery);
+
+        console.log("🔥 Chats encontrados:", chatSnapshot.docs.map(doc => doc.data()));
+
+        const userChats = chatSnapshot.docs.map((docSnap) => {
+          const chat = docSnap.data() as ChatData;
+          const otherUserId = chat.participants.find((id) => id !== currentUserId);
+          const otherUser = firebaseUsers.find((user) => user.id === otherUserId);
+
+          return {
+            id: docSnap.id,
+            participants: chat.participants,
+            otherUser,
+          };
         });
-      }
 
-      // Navega para o chat com o ID gerado
-      navigate({
-        to: "/chat/$chatId",
-        params: { chatId },
-      });
-    } catch (error) {
-      console.error("Erro ao acessar o chat:", error);
+        setChats(userChats);
+      } catch (error) {
+        console.error("Erro ao buscar os chats:", error);
+      } finally {
+        setChatsLoading(false);
+      }
+    };
+
+    if (firebaseUsers.length > 0) {
+      fetchChats();
     }
+  }, [auth.user?.email, firebaseUsers]);
+
+  const handleNavigateToChat = (chatId: string) => {
+    navigate({
+      to: "/chat/$chatId",
+      params: { chatId },
+    });
   };
 
-  const allUsers = data
-    ?.filter((user) => {
-      return (
-        user.id !== auth.user?.id &&
-        firebaseUsers.some((u) => u.username === user.username)
-      );
-    })
-    .map((user) => {
-      const firebaseUser = firebaseUsers.find(
-        (u) => u.username === user.username
-      );
-      return {
-        ...user,
-        firebaseId: firebaseUser?.id || null,
-      };
-    });
-
   return (
-    <Grid2 container spacing={2} sx={{ p: 2 }}>
-      <Grid2 size={12}>
-        <Typography variant="h4">Chat</Typography>
-      </Grid2>
-
-      <Grid2 size={12} display="flex" alignItems="center">
-        <TextField
-          variant="outlined"
-          placeholder="Pesquisar usuário"
-          fullWidth
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{
-            mr: 2,
-            backgroundColor: "#fff",
-            borderRadius: 1,
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#ccc",
-              },
-              "&:hover fieldset": {
-                borderColor: "#999",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "#1976d2",
-              },
-            },
-            "& .MuiInputLabel-root": {
-              color: "#666",
-            },
-            "& .MuiInputBase-input": {
-              color: "#333",
-            },
-          }}
-        />
-        <Button
-          sx={{
-            height: "100%",
-            background: theme.palette.primary.main,
-            color: theme.palette.primary.contrastText,
-            "&:hover": {
-              background: theme.palette.primary.dark,
-            },
-          }}
-          type="button"
-          aria-label="search"
-        >
-          <SearchIcon />
-        </Button>
-      </Grid2>
-
-      <Grid2
-        size={{
-          xs: 12,
-        }}
-      >
-        {isLoading ? (
-          <CircularProgress />
-        ) : allUsers && allUsers.length ? (
-          <Grid2 container spacing={2}>
-            {allUsers.map((user) => (
-              <Grid2
-                key={user.id}
-                onClick={() => handleNavigateToChat(user.firebaseId || "")}
-                sx={{
-                  cursor: "pointer",
-                }}
-                size={{
-                  xs: 12,
-                  sm: 6,
-                  md: 4,
-                  lg: 3,
-                }}
-              >
-                <UserCard user={user} />
-              </Grid2>
+    <Grid container spacing={2} sx={{ p: 2 }}>
+      {/* 🔥 Sidebar com a lista de chats */}
+      <Grid item xs={3} sx={{ height: "100vh", borderRight: `1px solid ${theme.palette.divider}`, overflowY: "auto" }}>
+        <Typography variant="h6" sx={{ p: 2 }}>Seus Chats</Typography>
+        {chatsLoading ? (
+          <CircularProgress sx={{ mx: "auto", display: "block" }} />
+        ) : chats.length > 0 ? (
+          <List>
+            {chats.map((chat, index) => (
+              <Box key={chat.id}>
+                <ListItem
+                  button
+                  onClick={() => handleNavigateToChat(chat.id)}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: theme.palette.action.hover,
+                    },
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      src={chat.otherUser?.avatarUrl || "https://via.placeholder.com/50"}
+                      sx={{ width: 40, height: 40 }}
+                    />
+                  </ListItemAvatar>
+                  <ListItemText primary={chat.otherUser?.username || "Usuário Desconhecido"} />
+                </ListItem>
+                {index !== chats.length - 1 && <Divider />}
+              </Box>
             ))}
-          </Grid2>
-        ) : search == "" ? (
-          <Typography>Procure um usuário e faça conexões incríveis!</Typography>
+          </List>
         ) : (
-          <Typography>
-            Nenhum usuário encontrado com o nome "{search}".
-          </Typography>
+          <Typography sx={{ p: 2 }}>Nenhum chat encontrado.</Typography>
         )}
-      </Grid2>
-    </Grid2>
+      </Grid>
+
+      {/* 🔥 Conteúdo Principal */}
+      <Grid item xs={9}>
+        <Typography variant="h4">Chat</Typography>
+
+        <Grid item xs={12} display="flex" alignItems="center" sx={{ mt: 2 }}>
+          <TextField
+            variant="outlined"
+            placeholder="Pesquisar usuário"
+            fullWidth
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{
+              mr: 2,
+              backgroundColor: "#fff",
+              borderRadius: 1,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "#ccc" },
+                "&:hover fieldset": { borderColor: "#999" },
+                "&.Mui-focused fieldset": { borderColor: "#1976d2" },
+              },
+              "& .MuiInputLabel-root": { color: "#666" },
+              "& .MuiInputBase-input": { color: "#333" },
+            }}
+          />
+          <Button
+            sx={{
+              height: "100%",
+              background: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
+              "&:hover": { background: theme.palette.primary.dark },
+            }}
+            type="button"
+            aria-label="search"
+          >
+            <SearchIcon />
+          </Button>
+        </Grid>
+
+        {/* 🔥 Seção de Pesquisa de Usuários */}
+        <Grid item xs={12} sx={{ mt: 2 }}>
+          <Typography variant="h6">Pesquisar Usuários</Typography>
+          {isLoading ? (
+            <CircularProgress />
+          ) : data && data.length ? (
+            <Grid container spacing={2}>
+              {data
+                .filter((user) => firebaseUsers.some((u) => u.username === user.username))
+                .map((user) => {
+                  const firebaseUser = firebaseUsers.find((u) => u.username === user.username);
+                  return (
+                    <Grid
+                      key={user.id}
+                      onClick={() => handleNavigateToChat(firebaseUser?.id || "")}
+                      sx={{ cursor: "pointer" }}
+                      item
+                      xs={12}
+                      sm={6}
+                      md={4}
+                      lg={3}
+                    >
+                      <UserCard user={{ ...user, firebaseId: firebaseUser?.id || null }} />
+                    </Grid>
+                  );
+                })}
+            </Grid>
+          ) : (
+            <Typography>Nenhum usuário encontrado.</Typography>
+          )}
+        </Grid>
+      </Grid>
+    </Grid>
   );
 }
