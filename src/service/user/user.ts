@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from "axios";
-import { apiRequestWithOptionalToken } from "../../config/api";
+import { apiRequestWithOptionalToken, apiRequestWithToken } from "../../config/api";
 
 type GetUserByIdResponse = {
   user_image: string;
@@ -8,11 +8,18 @@ type GetUserByIdResponse = {
   following_number: number;
 };
 
-export const getUserById = async (userId: number): Promise<GetUserByIdResponse> => {
+export interface UserResponse {
+  user_image: string;
+  username: string;
+  followers_number: number;
+  following_number: number;
+}
+
+export const getUserById = async (userId: string): Promise<UserResponse> => {
   const config: AxiosRequestConfig = {
-    url: `/get-user-by-id/${userId}`,
+    url: `/api/get-user-by-id/${userId}`,
     method: "GET",
   };
 
-  return apiRequestWithOptionalToken<GetUserByIdResponse>(config);
+  return apiRequestWithToken<UserResponse>(config);
 };

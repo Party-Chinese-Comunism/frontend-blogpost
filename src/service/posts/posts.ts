@@ -115,3 +115,12 @@ export const getFavoritePosts = async (): Promise<ListMyPostsResponse> => {
 
   return apiRequestWithToken<ListMyPostsResponse>(config);
 };
+
+export const getUserPosts = async (userId: string): Promise<ListMyPostsResponse> => {
+  const config: AxiosRequestConfig = {
+    url: `/api/posts/${userId}`,
+    method: "GET",
+  };
+
+  return apiRequestWithToken<ListMyPostsResponse>(config);
+};

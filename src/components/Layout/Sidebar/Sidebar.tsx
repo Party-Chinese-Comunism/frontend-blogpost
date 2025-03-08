@@ -1,6 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
+import MenuIcon from "@mui/icons-material/Menu";
 import {
   Box,
   useTheme,
@@ -9,8 +8,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Collapse,
-  Chip,
+  IconButton,
   Typography,
 } from "@mui/material";
 import { useEffect } from "react";
@@ -42,7 +40,7 @@ const Sidebar = () => {
   } = useLayout();
   const location = useLocation();
   const theme = useTheme();
-  const effectiveSidebarWidth = isMobile ? 240 : collapsed ? 0 : 240;
+  const effectiveSidebarWidth = isMobile ? 240 : collapsed ? 64 : 240;
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -64,15 +62,10 @@ const Sidebar = () => {
   }, []);
 
   const updateOpenMenusBasedOnCurrentPath = () => {
-    const isActiveInTree = (
-      item: SidebarItem,
-      currentPath: string
-    ): boolean => {
+    const isActiveInTree = (item: SidebarItem, currentPath: string): boolean => {
       if (item.path && currentPath === item.path) return true;
       if (item.children) {
-        return item.children.some((child) =>
-          isActiveInTree(child, currentPath)
-        );
+        return item.children.some((child) => isActiveInTree(child, currentPath));
       }
       return false;
     };
@@ -81,11 +74,7 @@ const Sidebar = () => {
       const newOpen: Record<string, boolean> = {};
       items.forEach((item) => {
         if (item.children) {
-          if (
-            item.children.some((child) =>
-              isActiveInTree(child, location.pathname)
-            )
-          ) {
+          if (item.children.some((child) => isActiveInTree(child, location.pathname))) {
             newOpen[item.label] = true;
             Object.assign(newOpen, findOpenMenus(item.children));
           }
@@ -103,21 +92,12 @@ const Sidebar = () => {
       return (
         <ListItemButton key={item.label} component={Link} to={item.path!}>
           {item.icon && (
-            <ListItemIcon
-              sx={{
-                color: theme.palette.common.white,
-              }}
-            >
+            <ListItemIcon sx={{ color: theme.palette.common.white }}>
               {item.icon}
             </ListItemIcon>
           )}
           {!collapsed && (
-            <ListItemText
-              sx={{
-                color: theme.palette.common.white,
-              }}
-              primary={item.label}
-            />
+            <ListItemText sx={{ color: theme.palette.common.white }} primary={item.label} />
           )}
         </ListItemButton>
       );
@@ -125,54 +105,75 @@ const Sidebar = () => {
   };
 
   return (
-    <Drawer
-      variant={isMobile ? "temporary" : "permanent"}
-      open={isMobile ? toggled : true}
-      onClose={() => setToggled(false)}
-      sx={{
-        width: effectiveSidebarWidth,
-        height: "100vh",
-        transition: theme.transitions.create(["margin", "width"], {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen,
-        }),
-        "& .MuiDrawer-paper": {
-          width: "100%",
-          position: "relative",
-          background: theme.palette.primary.main,
+    <>
+      {collapsed && (
+        <IconButton
+          onClick={() => setCollapsed(false)}
+          sx={{
+            position: "fixed",
+            top: 16,
+            left: 16,
+            zIndex: 1300, 
+            background: theme.palette.primary.main,
+            color: "white",
+            "&:hover": {
+              background: theme.palette.primary.dark,
+            },
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
+      )}
+
+      <Drawer
+        variant={isMobile ? "temporary" : "permanent"}
+        open={isMobile ? toggled : true}
+        onClose={() => setToggled(false)}
+        sx={{
+          width: effectiveSidebarWidth,
+          height: "100vh",
           transition: theme.transitions.create(["margin", "width"], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
-          height: "100vh",
-          overflowY: "auto",
-        },
-      }}
-    >
-      <Box my={1} component={Link} to="/">
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: theme.palette.common.white,
-            width: "100%",
-            gap: 1,
-          }}
-        >
-          <Box
-            component="img"
-            src={logo}
-            alt="Logo"
-            sx={{ objectFit: "contain", height: 50 }}
-          />
-          <Typography variant="h6" component="div">
-            Iris
-          </Typography>
+          "& .MuiDrawer-paper": {
+            width: effectiveSidebarWidth,
+            position: "relative",
+            background: theme.palette.primary.main,
+            transition: theme.transitions.create(["margin", "width"], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+            height: "100vh",
+            overflowY: "auto",
+          },
+        }}
+      >
+        <Box display="flex" alignItems="center" justifyContent="space-between" p={2}>
+          <Box display="flex" alignItems="center" sx={{ width: collapsed ? 64 : "auto" }}>
+            <Box
+              component="img"
+              src={logo}
+              alt="Logo"
+              sx={{
+                objectFit: "contain",
+                height: collapsed ? 40 : 50, 
+                transition: "height 0.3s ease",
+              }}
+            />
+            {!collapsed && (
+              <Typography variant="h6" component="div" sx={{ ml: 1, color: theme.palette.common.white }}>
+                Iris
+              </Typography>
+            )}
+          </Box>
+          <IconButton onClick={() => setCollapsed(!collapsed)} sx={{ color: "white" }}>
+            <MenuIcon />
+          </IconButton>
         </Box>
-      </Box>
-      <List>{renderSidebarItems(SIDEBAR_ITEMS)}</List>
-    </Drawer>
+        <List>{renderSidebarItems(SIDEBAR_ITEMS)}</List>
+      </Drawer>
+    </>
   );
 };
 
