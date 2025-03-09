@@ -4,6 +4,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import ChatIcon from "@mui/icons-material/Chat";
+import HomeIcon from "@mui/icons-material/Home";
 type AppRoutePaths = FileRoutesByPath[keyof FileRoutesByPath]["path"];
 
 export interface SidebarItem {
@@ -17,6 +18,11 @@ export interface SidebarItem {
 }
 
 export const SIDEBAR_ITEMS: SidebarItem[] = [
+  {
+    label: "Home",
+    icon: <HomeIcon />,
+    path: "/",
+  },
   {
     label: "Meus Posts",
     icon: <BarChartOutlinedIcon />,

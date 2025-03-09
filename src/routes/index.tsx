@@ -170,7 +170,11 @@ function HomeComponent() {
 
               <CardMedia
                 component="img"
-                image={item.image_url ? `${window.location.origin}${item.image_url}` : noImage}
+                image={
+                  item.image_url
+                    ? `${window.location.origin}${item.image_url}`
+                    : noImage
+                }
                 sx={{
                   width: "100%",
                   height: "auto",
@@ -267,6 +271,7 @@ function HomeComponent() {
                 display: "flex",
                 flexDirection: "column",
                 padding: 2,
+                pb: 0,
               }}
             >
               <DialogTitle>Comentários</DialogTitle>
@@ -318,12 +323,10 @@ function HomeComponent() {
 
               <Box
                 sx={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
+                  position: "relative",
+
                   width: "100%",
                   backgroundColor: "white",
-                  padding: "10px",
                   borderTop: "1px solid rgba(0, 0, 0, 0.1)",
                   display: "flex",
                   alignItems: "center",
@@ -331,6 +334,7 @@ function HomeComponent() {
                 }}
               >
                 <TextField
+                  size="small"
                   fullWidth
                   variant="outlined"
                   placeholder="Escreva um comentário..."
