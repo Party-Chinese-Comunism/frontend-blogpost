@@ -4,22 +4,26 @@ import { apiRequestWithOptionalToken, apiRequestWithToken } from "../../config/a
 type GetUserByIdResponse = {
   user_image: string;
   username: string;
+  is_following: boolean;
   followers_number: number;
   following_number: number;
 };
 
-export interface UserResponse {
-  user_image: string;
-  username: string;
-  followers_number: number;
-  following_number: number;
-}
 
-export const getUserById = async (userId: string): Promise<UserResponse> => {
+export const getUserById = async (userId: string): Promise<GetUserByIdResponse> => {
   const config: AxiosRequestConfig = {
-    url: `/api/get-user-by-id/${userId}`,
+    url: `/api/user/get-user-by-id/${userId}`,
     method: "GET",
   };
 
-  return apiRequestWithToken<UserResponse>(config);
+  return apiRequestWithToken<GetUserByIdResponse>(config);
+};
+
+export const followUser = async (userId: string): Promise<GetUserByIdResponse> => {
+  const config: AxiosRequestConfig = {
+    url: `/api/user/follow/${userId}`,
+    method: "POST",
+  };
+
+  return apiRequestWithToken<GetUserByIdResponse>(config);
 };

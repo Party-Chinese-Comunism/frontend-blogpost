@@ -62,10 +62,15 @@ const Sidebar = () => {
   }, []);
 
   const updateOpenMenusBasedOnCurrentPath = () => {
-    const isActiveInTree = (item: SidebarItem, currentPath: string): boolean => {
+    const isActiveInTree = (
+      item: SidebarItem,
+      currentPath: string
+    ): boolean => {
       if (item.path && currentPath === item.path) return true;
       if (item.children) {
-        return item.children.some((child) => isActiveInTree(child, currentPath));
+        return item.children.some((child) =>
+          isActiveInTree(child, currentPath)
+        );
       }
       return false;
     };
@@ -74,7 +79,11 @@ const Sidebar = () => {
       const newOpen: Record<string, boolean> = {};
       items.forEach((item) => {
         if (item.children) {
-          if (item.children.some((child) => isActiveInTree(child, location.pathname))) {
+          if (
+            item.children.some((child) =>
+              isActiveInTree(child, location.pathname)
+            )
+          ) {
             newOpen[item.label] = true;
             Object.assign(newOpen, findOpenMenus(item.children));
           }
@@ -97,7 +106,10 @@ const Sidebar = () => {
             </ListItemIcon>
           )}
           {!collapsed && (
-            <ListItemText sx={{ color: theme.palette.common.white }} primary={item.label} />
+            <ListItemText
+              sx={{ color: theme.palette.common.white }}
+              primary={item.label}
+            />
           )}
         </ListItemButton>
       );
@@ -113,7 +125,7 @@ const Sidebar = () => {
             position: "fixed",
             top: 16,
             left: 16,
-            zIndex: 1300, 
+            zIndex: 1300,
             background: theme.palette.primary.main,
             color: "white",
             "&:hover": {
@@ -149,25 +161,43 @@ const Sidebar = () => {
           },
         }}
       >
-        <Box display="flex" alignItems="center" justifyContent="space-between" p={2}>
-          <Box display="flex" alignItems="center" sx={{ width: collapsed ? 64 : "auto" }}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          p={2}
+        >
+          <Box
+            component={Link}
+            to="/"
+            display="flex"
+            alignItems="center"
+            sx={{ width: collapsed ? 64 : "auto" }}
+          >
             <Box
               component="img"
               src={logo}
               alt="Logo"
               sx={{
                 objectFit: "contain",
-                height: collapsed ? 40 : 50, 
+                height: collapsed ? 40 : 50,
                 transition: "height 0.3s ease",
               }}
             />
             {!collapsed && (
-              <Typography variant="h6" component="div" sx={{ ml: 1, color: theme.palette.common.white }}>
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{ ml: 1, color: theme.palette.common.white }}
+              >
                 Iris
               </Typography>
             )}
           </Box>
-          <IconButton onClick={() => setCollapsed(!collapsed)} sx={{ color: "white" }}>
+          <IconButton
+            onClick={() => setCollapsed(!collapsed)}
+            sx={{ color: "white" }}
+          >
             <MenuIcon />
           </IconButton>
         </Box>
