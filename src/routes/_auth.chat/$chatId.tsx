@@ -119,7 +119,7 @@ function RouteComponent() {
         ) : (
           <List>
             {chats.map(chat => (
-              <ListItem key={chat.id} button onClick={() => handleNavigateToChat(chat.id)} sx={{ bgcolor: chat.id === chatId ? '#1976d2' : 'transparent' }}>
+              <ListItem key={chat.id} component="li" onClick={() => handleNavigateToChat(chat.id)} sx={{ bgcolor: chat.id === chatId ? '#1976d2' : 'transparent' }}>
                 <ListItemAvatar>
                   <Avatar src={chat.otherUser?.avatarUrl || 'https://via.placeholder.com/50'} />
                 </ListItemAvatar>
@@ -145,7 +145,7 @@ function RouteComponent() {
       {/* Modal para pesquisar usuários */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         <Box sx={{ bgcolor: '#1e1e1e', p: 3, borderRadius: 2, width: 400, margin: '10vh auto', color: '#ffffff' }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Pesquisar Usuários</Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>Pesquisar usuários</Typography>
           <TextField
             fullWidth
             variant="outlined"
@@ -160,9 +160,9 @@ function RouteComponent() {
           ) : (
             <List>
               {data?.map(user => (
-                <ListItem key={user.id} button onClick={() => handleNavigateToChat(user.id)}>
+                <ListItem key={user.id} onClick={() => handleNavigateToChat(user.id.toString())}>
                   <ListItemAvatar>
-                    <Avatar src={user.avatarUrl || 'https://via.placeholder.com/50'} />
+                    <Avatar src={user.user_image || 'https://via.placeholder.com/50'} />
                   </ListItemAvatar>
                   <ListItemText primary={user.username} secondary={user.email} />
                 </ListItem>

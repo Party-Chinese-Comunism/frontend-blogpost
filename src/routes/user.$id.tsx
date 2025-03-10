@@ -1,19 +1,38 @@
 import { Avatar, Box, Button, Grid, Typography, CircularProgress } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import ArchiveIcon from "@mui/icons-material/Archive";
+import ChatIcon from '@mui/icons-material/Chat';
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useUserPosts } from "../hooks/usePosts/useGetUserPosts";
 import { useUserById } from "../hooks/useUsers/useGetUserById";
+import { useState, useEffect } from "react";
+import { followUser } from "../service/user/user";
 
 export const Route = createFileRoute("/user/$id")({
   component: UserProfileComponent,
 });
 
 export default function UserProfileComponent() {
-  const { id } = useParams({ strict: false });
-
-  const { data: userData, isLoading: userLoading, error: userError } = useUserById(id);
+  const { id } = useParams({ strict: false }) as { id: string };
+  const { data: userData, isLoading: userLoading, error: userError, refetch } = useUserById(id);
   const { data: postsData, isLoading: postsLoading, error: postsError } = useUserPosts(id);
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  useEffect(() => {
+    if (userData) {
+      setIsFollowing(userData.is_following);
+    }
+  }, [userData]);
+
+  const handleFollow = async () => {
+    try {
+      if (id) {
+        await followUser(id);
+      }
+      setIsFollowing(!isFollowing);
+      refetch();
+    } catch (error) {
+      console.error("Erro ao seguir usuário", error);
+    }
+  };
 
   if (userLoading || postsLoading) {
     return (
@@ -56,12 +75,16 @@ export default function UserProfileComponent() {
           </Box>
         </Box>
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button variant="contained" startIcon={<EditIcon />} sx={{ textTransform: "none" }}>Editar perfil</Button>
-          <Button variant="outlined" startIcon={<ArchiveIcon />}>Arquivados</Button>
+          <Button 
+            variant={isFollowing ? "outlined" : "contained"} 
+            sx={{ textTransform: "none" }} 
+            onClick={handleFollow}
+          >
+            {isFollowing ? "Seguindo" : "Seguir"}
+          </Button>
+          <Button variant="outlined" startIcon={<ChatIcon />}>Chat</Button>
         </Box>
       </Box>
-
-      <Typography variant="subtitle1" sx={{ textAlign: "center", mb: 2 }}>{user.fullName}</Typography>
 
       <Box sx={{ borderTop: "1px solid gray", mt: 3, pt: 2 }}>
         {user.posts.length > 0 ? (
