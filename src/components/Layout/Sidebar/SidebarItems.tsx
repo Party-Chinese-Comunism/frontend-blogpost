@@ -42,11 +42,6 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     path: `/user/${user.id}` as any,
   },
   {
-    label: "Meus Posts",
-    icon: <BarChartOutlinedIcon />,
-    path: "/my-posts",
-  },
-  {
     label: "Criar Post",
     icon: <SummarizeIcon />,
     path: "/new-post",

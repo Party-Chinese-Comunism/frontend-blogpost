@@ -266,11 +266,8 @@ export const Header = () => {
                     {user?.id === undefined ? (
                       <CircularProgress />
                     ) : (
-                      <Link to="/user/$id" params={{ id: user?.id.toString() }}>
-                        <Box
-                          component={Link}
-                          sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
-                        >
+                      <Link to="/user/$id" params={{ id: user.id.toString() }}>
+                        <Box sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
                           {user?.username}
                         </Box>
                       </Link>
