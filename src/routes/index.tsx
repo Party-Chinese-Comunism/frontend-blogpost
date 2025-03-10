@@ -172,7 +172,7 @@ function HomeComponent() {
                 component="img"
                 image={
                   item.image_url
-                    ? `${window.location.origin}${item.image_url}`
+                    ? `${item.image_url}`
                     : noImage
                 }
                 sx={{
