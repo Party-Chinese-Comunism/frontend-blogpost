@@ -5,6 +5,7 @@ import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import ChatIcon from "@mui/icons-material/Chat";
 import HomeIcon from "@mui/icons-material/Home";
+
 type AppRoutePaths = FileRoutesByPath[keyof FileRoutesByPath]["path"];
 
 export interface SidebarItem {
@@ -17,6 +18,18 @@ export interface SidebarItem {
   notificationCount?: number;
 }
 
+const user = (() => {
+  try {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      return JSON.parse(storedUser).user; 
+    }
+  } catch (error) {
+    console.error("Erro ao recuperar usuário do localStorage", error);
+  }
+  return null;
+})();
+
 export const SIDEBAR_ITEMS: SidebarItem[] = [
   {
     label: "Home",
@@ -24,9 +37,9 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     path: "/",
   },
   {
-    label: "Meus Posts",
-    icon: <BarChartOutlinedIcon />,
-    path: "/my-posts",
+    label: "Meu Perfil",
+    icon: <DashboardIcon />,
+    path: `/user/${user.id}` as any,
   },
   {
     label: "Criar Post",
