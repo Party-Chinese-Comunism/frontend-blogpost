@@ -11,6 +11,7 @@ import {
   IconButton,
   Box,
   Input,
+  CircularProgress,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
@@ -262,12 +263,18 @@ export const Header = () => {
                   />
 
                   <Box>
-                    <Box sx={{ fontWeight: "bold", fontSize: "0.875rem" }}>
-                      {user?.username}
-                    </Box>
-                    <Box sx={{ fontSize: "0.75rem", color: "text.secondary" }}>
-                      {"Seguidores"}
-                    </Box>
+                    {user?.id === undefined ? (
+                      <CircularProgress />
+                    ) : (
+                      <Link to="/user/$id" params={{ id: user?.id.toString() }}>
+                        <Box
+                          component={Link}
+                          sx={{ fontWeight: "bold", fontSize: "0.875rem" }}
+                        >
+                          {user?.username}
+                        </Box>
+                      </Link>
+                    )}
                   </Box>
                 </Box>
                 <IconButton
