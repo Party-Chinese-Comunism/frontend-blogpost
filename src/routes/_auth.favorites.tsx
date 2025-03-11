@@ -183,7 +183,7 @@ function FavoritesComponent() {
               />
               <CardMedia
                 component="img"
-                image={item.image_url || noImage}
+                image={"https://picsum.photos/1000"}
                 sx={{
                   width: "100%",
                   height: "auto",
