@@ -155,21 +155,21 @@ export default function UserProfileComponent() {
       <Box sx={{ borderTop: "1px solid gray", mt: 3, pt: 2 }}>
         {posts?.length > 0 ? (
           <Grid container spacing={1}>
-            {posts.map((post, index) => (
-              <Grid item xs={4} sm={4} md={4} key={index}>
-                <Box
-                  sx={{
-                    width: "100%",
-                    paddingTop: "100%",
-                    position: "relative",
-                    background: `url(${post.image_url}) center/cover no-repeat`,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 0.8 },
-                  }}
-                />
-              </Grid>
-            ))}
-          </Grid>
+  {posts.map((post, index) => (
+    <Grid item xs={4} sm={4} md={4} key={index}>
+      <Box
+        sx={{
+          width: "100%",
+          paddingTop: "100%",
+          position: "relative",
+          background: `url("https://picsum.photos/300") center/cover no-repeat`,
+          cursor: "pointer",
+          "&:hover": { opacity: 0.8 },
+        }}
+      />
+    </Grid>
+  ))}
+</Grid>
         ) : (
           <Typography textAlign="center" width="100%" mt={2}>
             Nenhuma postagem encontrada.
