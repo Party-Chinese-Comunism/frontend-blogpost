@@ -19,7 +19,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate, createFileRoute } from '@tanstack/react-router';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { useAuth } from '../../context/auth';
 import { db } from '../../firebase';
 import { useSearchUsersByName } from '../../hooks/useUsers/useSearchUsersByName';
@@ -93,6 +93,43 @@ function RouteComponent() {
     navigate({ to: '/chat/$chatId', params: { chatId } });
   };
 
+  const handleCreateChat = async (userId: string) => {
+    if (!auth.user?.email) return;
+
+    const currentUser = firebaseUsers.find(u => u.email === auth.user.email);
+    if (!currentUser) return;
+
+    const chatsRef = collection(db, 'chats');
+    const chatQuery = query(
+      chatsRef,
+      where('participants', 'array-contains', currentUser.id)
+    );
+    const chatSnapshot = await getDocs(chatQuery);
+
+    const existingChat = chatSnapshot.docs.find(docSnap => {
+      const chatData = docSnap.data() as ChatData;
+      return chatData.participants.includes(userId);
+    });
+
+    if (existingChat) {
+      navigate({ to: '/chat/$chatId', params: { chatId: existingChat.id } });
+      return;
+    }
+
+    const newChatRef = await addDoc(chatsRef, {
+      participants: [currentUser.id, userId],
+      createdAt: new Date(),
+    });
+
+    setChats(prevChats => [
+      ...prevChats,
+      { id: newChatRef.id, participants: [currentUser.id, userId], otherUser: firebaseUsers.find(u => u.id === userId) }
+    ]);
+
+    setModalOpen(false);
+    navigate({ to: '/chat/$chatId', params: { chatId: newChatRef.id } });
+  };
+
   return (
     <Grid container spacing={2} sx={{ p: 2, bgcolor: '#121212', color: '#ffffff' }}>
       <Grid item xs={3} sx={{ height: '100vh', borderRight: `1px solid ${theme.palette.divider}`, overflowY: 'auto' }}>
@@ -143,14 +180,16 @@ function RouteComponent() {
             <CircularProgress sx={{ color: '#ffffff' }} />
           ) : data && data.length ? (
             <List>
-              {data.filter(user => firebaseUsers.some(u => u.username === user.username)).map(user => {
+              {data.map(user => {
                 const firebaseUser = firebaseUsers.find(u => u.username === user.username);
+                if (!firebaseUser) return null;
+
                 return (
-                  <ListItem key={user.id} button onClick={() => handleNavigateToChat(firebaseUser?.id || '')}>
+                  <ListItem key={firebaseUser.id} button onClick={() => handleCreateChat(firebaseUser.id)}>
                     <ListItemAvatar>
-                      <Avatar src={firebaseUser?.avatarUrl || 'https://via.placeholder.com/50'} />
+                      <Avatar src={firebaseUser.avatarUrl || 'https://via.placeholder.com/50'} />
                     </ListItemAvatar>
-                    <ListItemText primary={user.username} secondary={user.email} />
+                    <ListItemText primary={firebaseUser.username} secondary={firebaseUser.email} />
                   </ListItem>
                 );
               })}
@@ -163,3 +202,5 @@ function RouteComponent() {
     </Grid>
   );
 }
+
+export default RouteComponent;
