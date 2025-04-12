@@ -45,10 +45,10 @@ jobs:
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
       - name: Build Docker image
-        run: docker build -t dogogh1/frontend-blogpost:latest .
+        run: docker build -t "${{ secrets.DOCKERHUB_USERNAME }}"/frontend-blogpost:latest .
 
       - name: Push Docker image
-        run: docker push dogogh1/frontend-blogpost:latest
+        run: docker push "${{ secrets.DOCKERHUB_USERNAME }}"/frontend-blogpost:latest
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -60,19 +60,17 @@ jobs:
 
     - name: SSH into VPN Server using password
       run: |
-        sshpass -p 'vmvpn' ssh -o StrictHostKeyChecking=no vmvpn@34.123.48.112 "
-          # Comandos para o primeiro SSH no servidor VPN
-          sshpass -p 'admin' ssh -o StrictHostKeyChecking=no frontend@10.0.0.7 '
-            # Navegar até o diretório onde o docker-compose.yml está localizado
-            cd /home/frontend
+        sshpass -p '${{ secrets.VM_VPN_PASS }}' ssh -o StrictHostKeyChecking=no "${{ secrets.VM_VPN }}" "
+        #retirar o ssh para a vpn
+       
+          sshpass -p '${{ secrets.VM_FRONT_PASS }}' ssh -o StrictHostKeyChecking=no "${{ secrets.VM_FRONT }}" '
+
+            cd "${{ secrets.VM_PATH }}"
             
-            # Parar e remover os containers com Docker Compose
             docker compose down
             
-            # Remover as imagens Docker, se necessário
             docker system prune -af
             
-            # Subir novamente os containers com Docker Compose
             docker compose up -d
           '
         "
