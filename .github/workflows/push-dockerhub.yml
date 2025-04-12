@@ -52,22 +52,25 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    steps:  
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
-  
-      - name: SSH into VPN Server using password
-        run: |
-          sshpass -p 'vmvpn' ssh -o StrictHostKeyChecking=no vmvpn@34.123.48.112 "
-   
-            sshpass -p 'admin' ssh -o StrictHostKeyChecking=no frontend@10.0.0.7 '
+    steps:
+    - name: Install sshpass
+      run: sudo apt-get update && sudo apt-get install -y sshpass
 
-              cd /home/frontend
+    - name: SSH into VPN Server using password
+      run: |
+        sshpass -p 'vmvpn' ssh -o StrictHostKeyChecking=no vmvpn@34.123.48.112 "
 
-              docker compose down
-      
-              docker system prune -af
-              
-              docker compose up -d
-            '
-          ") 
+          sshpass -p 'admin' ssh -o StrictHostKeyChecking=no frontend@10.0.0.7 '
+     
+            cd /home/frontend
+            
+            
+            docker compose down
+            
+            
+            docker system prune -af
+            
+
+            docker compose up -d
+          '
+        "
