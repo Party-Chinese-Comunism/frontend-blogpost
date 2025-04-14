@@ -15,7 +15,7 @@ export const createPost = async (input: CreatePostInput): Promise<any> => {
     formData.append("image", input.image[0]);
   }
   const config: AxiosRequestConfig = {
-    url: "/api/posts/create",
+    url: "/posts/create",
     method: "POST",
     data: formData,
     headers: {
@@ -27,7 +27,7 @@ export const createPost = async (input: CreatePostInput): Promise<any> => {
 };
 export const listMyPosts = async (): Promise<ListMyPostsResponse> => {
   const config: AxiosRequestConfig = {
-    url: "/api/posts/my-posts",
+    url: "/posts/my-posts",
     method: "GET",
   };
 
@@ -36,7 +36,7 @@ export const listMyPosts = async (): Promise<ListMyPostsResponse> => {
 
 export const getAllPosts = async (): Promise<ListMyPostsResponse> => {
   const config: AxiosRequestConfig = {
-    url: "/api/posts/list",
+    url: "/posts/list",
     method: "GET",
   };
 
@@ -50,7 +50,7 @@ type CreateComment = {
 
 export const createComment = async (input: CreateComment): Promise<any> => {
   const config: AxiosRequestConfig = {
-    url: `/api/comments/create`,
+    url: `/comments/create`,
     method: "POST",
     data: { content: input.content, post_id: input.postId },
     headers: {
@@ -70,7 +70,7 @@ type GetCommentsInput = {
 
 export const getCommentsByPostId = async ({ postId }: GetCommentsInput): Promise<Comment[]> => {
   const config: AxiosRequestConfig = {
-    url: `/api/comments/list/${postId}`,
+    url: `/comments/list/${postId}`,
     method: "GET",
   };
 
@@ -80,7 +80,7 @@ export const getCommentsByPostId = async ({ postId }: GetCommentsInput): Promise
 
 export const likeComment = async (input: LikeCommentInput): Promise<any> => {
   const config: AxiosRequestConfig = {
-    url: `/api/user/like/${input.commentId}`,
+    url: `/user/like/${input.commentId}`,
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -96,7 +96,7 @@ type FavoritePostInput = {
 
 export const favoritePost = async (input: FavoritePostInput): Promise<any> => {
   const config: AxiosRequestConfig = {
-    url: `/api/user/favorite/${input.postId}`,
+    url: `/user/favorite/${input.postId}`,
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -109,7 +109,7 @@ export const favoritePost = async (input: FavoritePostInput): Promise<any> => {
 
 export const getFavoritePosts = async (): Promise<ListMyPostsResponse> => {
   const config: AxiosRequestConfig = {
-    url: "/api/user/favorites",
+    url: "/user/favorites",
     method: "GET",
   };
 
@@ -118,7 +118,7 @@ export const getFavoritePosts = async (): Promise<ListMyPostsResponse> => {
 
 export const getUserPosts = async (userId: string): Promise<ListMyPostsResponse> => {
   const config: AxiosRequestConfig = {
-    url: `/api/posts/${userId}`,
+    url: `/posts/${userId}`,
     method: "GET",
   };
 
