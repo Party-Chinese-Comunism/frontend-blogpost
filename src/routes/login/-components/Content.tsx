@@ -10,7 +10,7 @@ import logo from "../../../assets/logo.png";
 const items = [
   {
     icon: <SettingsSuggestRoundedIcon sx={{ color: "text.secondary" }} />,
-    title: "Desempenho negativo",
+    title: "Desempenho Adaptável",
     description:
       "Nosso produto se ajusta facilmente às suas necessidades, aumentando a eficiência e simplificando suas tarefas.",
   },
