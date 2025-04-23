@@ -3,7 +3,7 @@ FROM node:18.17.0-alpine3.18 AS build
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production  # Melhor para CI/CD e cache
+RUN npm ci 
 
 COPY . .
 RUN npm run build
