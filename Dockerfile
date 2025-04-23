@@ -1,28 +1,22 @@
-# Use uma imagem base do Node.js 18
-FROM node:18-alpine
+# Etapa 1: Build da aplicação (React)
+FROM node:18.17.0-alpine3.18 AS build
 
-# Defina o diretório de trabalho
 WORKDIR /app
-
-# Copie os arquivos de dependência
 COPY package*.json ./
+RUN npm ci --only=production  # Melhor para CI/CD e cache
 
-# Instale as dependências
-RUN npm install
-
-# Copie o restante do código-fonte
 COPY . .
-COPY .env .env
-
-# Construa o projeto
 RUN npm run build
 
-# Instale o serve globalmente
-RUN npm install -g serve
+# Etapa 2: Servir com NGINX (leve e seguro)
+FROM nginx:1.25.2-alpine
 
-# Exponha a porta 3000
-EXPOSE 3000
+# Copia o build final para o diretório padrão do NGINX
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Copia a configuração customizada do NGINX (com bloqueios e proxy)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 
-
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["nginx", "-g", "daemon off;"]
