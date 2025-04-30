@@ -43,10 +43,10 @@ jobs:
         
         # criar arquivo env com o secret .env
       - name : env create
-        run: echo "${{secrets.ENV}}" > .env
+        run: echo "${{secrets.ENV}}" >> .env
 
       - name : env conf
-        run: echo "${{secrets.NGINX_CONF}}" > nginx.conf
+        run: echo "${{secrets.NGINX_CONF}}" >> nginx.conf
         
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
