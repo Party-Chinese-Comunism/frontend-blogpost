@@ -5,9 +5,18 @@ on:
     branches:
       - main
 
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  
+  GKE_CLUSTER: cluster-dev 
+  GKE_ZONE: us-central1  
+  DEPLOYMENT_NAME: blog-frontend  
+  IMAGE: frontend-blogpost 
+
 jobs:
-  build-and-push:
+  build-and-deploy:
+    name: Build, Push, and Deploy
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout code
@@ -33,34 +42,53 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
 
   deploy-to-gke:
-    needs: build-and-push 
+    needs: build-and-deploy
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Configuração do Google Cloud e autenticação com a chave da conta de serviço
       - name: Set up Google Cloud credentials
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          credentials_json: ${{ secrets.GCP_SA_KEY }}  # Fazendo a autenticação diretamente
+          service_account_key: ${{ secrets.GCP_SA_KEY }}  # Chave da conta de serviço
+          project_id: ${{ secrets.GCP_PROJECT_ID }}  # ID do seu projeto
 
-      - name: Authenticate with Google Cloud Service Account
+      # Configure Docker para usar gcloud como helper de autenticação
+      - name: Configure Docker to use gcloud
         run: |
-          echo "${{ secrets.GCP_SA_KEY }}" > "${HOME}/gcp-key.json"  # Cria um arquivo temporário com o conteúdo da chave JSON
-          gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"  # Usa o arquivo para autenticação
-          gcloud auth list  # Verifica se a conta de serviço foi autenticada corretamente
-          gcloud config list  # Verifica a configuração atual do gcloud
+          gcloud --quiet auth configure-docker
 
-      - name: Set up kubectl for cluster-dev
-        run: |
-          gcloud container clusters get-credentials cluster-dev --zone us-central1 --project ${{ secrets.GCP_PROJECT_ID }}
+      # Obter credenciais do GKE para o cluster
+      - uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Update Kubernetes deployment with new image
+      # Build da imagem Docker
+      - name: Build Docker image
         run: |
-          kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest --record -n frontend
+          docker build \
+            --tag "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA" \
+            --build-arg GITHUB_SHA="$GITHUB_SHA" \
+            --build-arg GITHUB_REF="$GITHUB_REF" \
+            .
 
-      - name: Verify the update status
+      # Publicar a imagem Docker no Google Container Registry
+      - name: Publish Docker image to GCR
         run: |
-          kubectl rollout status deployment/blog-frontend -n frontend
+          docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
+
+      # Deploy da imagem Docker no GKE
+      - name: Deploy to GKE
+        run: |
+          kubectl set image deployment/$DEPLOYMENT_NAME frontend=gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA --record
+          kubectl rollout status deployment/$DEPLOYMENT_NAME
+
+      # Verificação do status do deployment
+      - name: Verify the deployment
+        run: |
+          kubectl get services -o wide
