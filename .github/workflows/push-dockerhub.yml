@@ -33,7 +33,7 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
 
   deploy-to-gke:
-    needs: build-and-push  # Só roda após o build and push
+    needs: build-and-push 
     runs-on: ubuntu-latest
 
     steps:
@@ -46,14 +46,20 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      - name: Authenticate with Google Cloud Service Account
+        run: |
+          gcloud auth activate-service-account --key-file="${{ secrets.GCP_SA_KEY }}"
+          gcloud auth list  # Verifica se a conta de serviço foi autenticada corretamente
+          gcloud config list  # Verifica a configuração atual do gcloud
+
       - name: Set up kubectl for cluster-dev
         run: |
           gcloud container clusters get-credentials cluster-dev --zone us-central1 --project ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Update Kubernetes deployment with new image
         run: |
-          kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest --record -n frontend  
+          kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest --record -n frontend
 
       - name: Verify the update status
         run: |
-          kubectl rollout status deployment/blog-frontend -n frontend  
+          kubectl rollout status deployment/blog-frontend -n frontend
