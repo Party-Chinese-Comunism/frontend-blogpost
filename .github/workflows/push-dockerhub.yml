@@ -44,12 +44,12 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}  # Fazendo a autenticação diretamente
 
       - name: Authenticate with Google Cloud Service Account
         run: |
-          echo "${{ secrets.GCP_SA_KEY }}" | jq . > "${HOME}/gcp-key.json"  # Converte o segredo para formato JSON correto
-          gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"
+          echo "${{ secrets.GCP_SA_KEY }}" > "${HOME}/gcp-key.json"  # Cria um arquivo temporário com o conteúdo da chave JSON
+          gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"  # Usa o arquivo para autenticação
           gcloud auth list  # Verifica se a conta de serviço foi autenticada corretamente
           gcloud config list  # Verifica a configuração atual do gcloud
 
