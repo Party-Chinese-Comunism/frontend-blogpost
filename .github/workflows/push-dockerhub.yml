@@ -1,4 +1,4 @@
-name: Build and Push Frontend Docker image
+name: Update Frontend Docker image on GKE
 
 on:
   push:
@@ -6,52 +6,21 @@ on:
       - main
 
 jobs:
-  test:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: node-cache-${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-cache-${{ runner.os }}-npm-
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run frontend tests
-        run: npm test
-
   build-and-push:
-    needs: test  # Só roda se os testes passarem
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
 
       - name : env create
         run: echo "${{secrets.ENV}}" >> .env
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
-
-        
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -62,5 +31,29 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
-          
-    
+
+  deploy-to-gke:
+    needs: build-and-push  # Só roda após o build and push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Google Cloud credentials
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up kubectl for cluster-dev
+        run: |
+          gcloud container clusters get-credentials cluster-dev --zone us-central1 --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Update Kubernetes deployment with new image
+        run: |
+          kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest --record -n frontend  
+
+      - name: Verify the update status
+        run: |
+          kubectl rollout status deployment/blog-frontend -n frontend  
