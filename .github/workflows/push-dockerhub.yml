@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name : env create
+      - name: env create
         run: echo "${{secrets.ENV}}" >> .env
 
       - name: Set up Docker Buildx
@@ -44,11 +44,12 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}  # Configura o Google Cloud com a chave da conta de serviço
 
       - name: Authenticate with Google Cloud Service Account
         run: |
-          gcloud auth activate-service-account --key-file="${{ secrets.GCP_SA_KEY }}"
+          echo "${{ secrets.GCP_SA_KEY }}" > ${HOME}/gcp-key.json  # Cria um arquivo temporário com o conteúdo da chave JSON
+          gcloud auth activate-service-account --key-file="${HOME}/gcp-key.json"  # Usa o arquivo para autenticação
           gcloud auth list  # Verifica se a conta de serviço foi autenticada corretamente
           gcloud config list  # Verifica a configuração atual do gcloud
 
