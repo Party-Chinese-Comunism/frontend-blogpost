@@ -52,12 +52,15 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          # Não é mais necessário especificar componentes para instalar
   
       - name: Install gke-gcloud-auth-plugin
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+          # Baixa a versão mais recente do plugin diretamente do Google Cloud Storage
+          PLUGIN_URL="https://storage.googleapis.com/cloud-sdk-release/google-cloud-cli-$(gcloud --version | grep 'Google Cloud SDK' | awk '{print $4}')-linux-x86_64.tar.gz"
+          curl -O $PLUGIN_URL
+          tar -xzf google-cloud-cli-*-linux-x86_64.tar.gz
+          sudo cp google-cloud-sdk/bin/gke-gcloud-auth-plugin /usr/local/bin/
+          sudo chmod +x /usr/local/bin/gke-gcloud-auth-plugin
           echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
   
       - name: Configure kubectl to use cluster-dev
@@ -71,5 +74,3 @@ jobs:
         run: |
           kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
           kubectl rollout status deployment/blog-frontend
-    
-
