@@ -71,5 +71,5 @@ jobs:
   
       - name: Deploy to GKE
         run: |
-          kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest -n frontend
+          kubectl set image deployment/blog-frontend blog-frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest -n frontend
           kubectl rollout status deployment/blog-frontend -n frontend
