@@ -38,7 +38,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:${{ steps.commit.outputs.SHORT_SHA }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:novo  # Tag adicional opcional
+            ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:novo
 
   deploy:
     needs: build-and-push
