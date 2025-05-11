@@ -52,24 +52,21 @@ jobs:
         run: |
           # Baixando e instalando o Google Cloud SDK
           curl https://sdk.cloud.google.com | bash
-          echo "export PATH=$PATH:$HOME/google-cloud-sdk/bin" >> $GITHUB_ENV
           source $HOME/google-cloud-sdk/path.bash.inc
-      
+  
           # Instalando o plugin gke-gcloud-auth-plugin
           gcloud components install gke-gcloud-auth-plugin
-
-          
   
-      - name: Ensure gke-gcloud-auth-plugin is in PATH
+      - name: Verify gke-gcloud-auth-plugin installation
         run: |
-          # Adicionando o diretório do Google Cloud SDK ao PATH para garantir o acesso ao plugin
-          echo "export PATH=$PATH:$HOME/google-cloud-sdk/bin" >> $GITHUB_ENV
-          source $HOME/google-cloud-sdk/path.bash.inc
+          gcloud components list | grep gke-gcloud-auth-plugin
   
       - name: Configure kubectl to use cluster-dev
         run: |
           # Usando a região armazenada em GKE_REGION para configurar o kubectl
           gcloud container clusters get-credentials cluster-dev --region ${{ secrets.GKE_REGION }} --project ${{ secrets.GCP_PROJECT_ID }}
+          # Verificando a conexão com o cluster
+          kubectl cluster-info
   
       - name: Deploy to GKE (update blog-frontend image)
         run: |
