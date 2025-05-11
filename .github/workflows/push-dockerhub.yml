@@ -69,7 +69,7 @@ jobs:
             --project ${{ secrets.GCP_PROJECT_ID }}
           kubectl cluster-info
   
-      - name: Deploy to GKE (update blog-frontend image)
+      - name: Deploy to GKE
         run: |
-          kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
-          kubectl rollout status deployment/blog-frontend
+          kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest -n frontend
+          kubectl rollout status deployment/blog-frontend -n frontend
