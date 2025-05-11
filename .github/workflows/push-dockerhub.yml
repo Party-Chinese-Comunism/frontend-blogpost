@@ -48,10 +48,14 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }}  # Chave JSON da conta de serviço
           project_id: ${{ secrets.GCP_PROJECT_ID }}  # ID do projeto
   
-      - name: Install gke-gcloud-auth-plugin
+      - name: Install Google Cloud SDK and GKE Plugin
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
+          # Baixando e instalando o Google Cloud SDK
+          curl https://sdk.cloud.google.com | bash
+          source $HOME/google-cloud-sdk/path.bash.inc
+          
+          # Instalando o plugin gke-gcloud-auth-plugin
+          gcloud components install gke-gcloud-auth-plugin
   
       - name: Configure kubectl to use cluster-dev
         run: |
@@ -61,3 +65,4 @@ jobs:
         run: |
           kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
           kubectl rollout status deployment/blog-frontend
+
