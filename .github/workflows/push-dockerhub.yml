@@ -71,11 +71,5 @@ jobs:
   
       - name: Deploy to GKE
         run: |
-          echo "Verificando o contexto do kubectl..."
-          kubectl config current-context
-          echo "Verificando a versão atual da imagem no deployment..."
-          kubectl describe deployment blog-frontend -n frontend | grep Image
-          echo "Reiniciando a implantação..."
-          kubectl rollout restart deployment/blog-frontend -n frontend
-          echo "Verificando o status da implantação..."
+          kubectl patch deployment blog-frontend -n frontend -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/arch":"amd64"}}}}}'
           kubectl rollout status deployment/blog-frontend -n frontend
