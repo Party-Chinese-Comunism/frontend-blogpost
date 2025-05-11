@@ -59,6 +59,7 @@ jobs:
   
       - name: Ensure gke-gcloud-auth-plugin is in PATH
         run: |
+          # Adicionando o diretório do Google Cloud SDK ao PATH para garantir o acesso ao plugin
           echo "export PATH=$PATH:$HOME/google-cloud-sdk/bin" >> $GITHUB_ENV
           source $HOME/google-cloud-sdk/path.bash.inc
   
@@ -71,5 +72,6 @@ jobs:
         run: |
           kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
           kubectl rollout status deployment/blog-frontend
+
 
 
