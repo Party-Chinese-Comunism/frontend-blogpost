@@ -7,14 +7,15 @@ on:
 
 jobs:
   build-and-push:
-
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necessário para obter o commit hash completo
         
-      - name : env create
+      - name: env create
         run: echo "${{secrets.ENV}}" >> .env
         
       - name: Set up Docker Buildx
@@ -26,12 +27,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Get commit SHA
+        id: commit
+        run: echo "SHORT_SHA=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:novo
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:${{ steps.commit.outputs.SHORT_SHA }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:novo  # Tag adicional opcional
 
   deploy:
     needs: build-and-push
@@ -41,6 +48,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+  
+      - name: Get commit SHA
+        id: commit
+        run: echo "SHORT_SHA=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
   
       - id: 'auth'
         uses: google-github-actions/auth@v2
@@ -56,27 +69,24 @@ jobs:
   
       - name: Install gke-gcloud-auth-plugin
         run: |
-          # Baixa a versão estável mais recente do plugin
           sudo curl -Lo /usr/local/bin/gke-gcloud-auth-plugin \
             https://storage.googleapis.com/gke-release/gke-gcloud-auth-plugin/linux/amd64/gke-gcloud-auth-plugin
           sudo chmod +x /usr/local/bin/gke-gcloud-auth-plugin
           echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
   
-      - name: Configure kubectl to use cluster-dev
+      - name: Configure kubectl
         run: |
           gcloud container clusters get-credentials cluster-dev \
             --region ${{ secrets.GKE_REGION }} \
             --project ${{ secrets.GCP_PROJECT_ID }}
-          kubectl cluster-info
   
       - name: Deploy to Kubernetes
         run: |
-       
-          kubectl set image deployment/blog-frontend -n frontend blog-frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:novo
+          kubectl set image deployment/blog-frontend -n frontend \
+            blog-frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:${{ steps.commit.outputs.SHORT_SHA }}
           
-     
-          kubectl patch deployment blog-frontend -n frontend -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/arch":"amd64"}}}}}'
+          kubectl patch deployment blog-frontend -n frontend \
+            -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/arch":"amd64"}}}}}'
 
-          kubectl rollout restart deployment blog-frontend -n frontend
-
+          kubectl rollout restart deployment/blog-frontend -n frontend
           kubectl rollout status deployment/blog-frontend -n frontend --timeout=120s
