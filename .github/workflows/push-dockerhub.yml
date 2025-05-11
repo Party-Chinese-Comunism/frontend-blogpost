@@ -31,7 +31,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:novo
 
   deploy:
     needs: build-and-push
@@ -69,7 +69,14 @@ jobs:
             --project ${{ secrets.GCP_PROJECT_ID }}
           kubectl cluster-info
   
-      - name: Deploy to GKE
+      - name: Deploy to Kubernetes
         run: |
+       
+          kubectl set image deployment/blog-frontend -n frontend blog-frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:novo
+          
+     
           kubectl patch deployment blog-frontend -n frontend -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/arch":"amd64"}}}}}'
-          kubectl rollout status deployment/blog-frontend -n frontend
+
+          kubectl rollout restart deployment blog-frontend -n frontend
+
+          kubectl rollout status deployment/blog-frontend -n frontend --timeout=120s
