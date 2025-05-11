@@ -52,10 +52,13 @@ jobs:
         run: |
           # Baixando e instalando o Google Cloud SDK
           curl https://sdk.cloud.google.com | bash
+          echo "export PATH=$PATH:$HOME/google-cloud-sdk/bin" >> $GITHUB_ENV
           source $HOME/google-cloud-sdk/path.bash.inc
-          
+      
           # Instalando o plugin gke-gcloud-auth-plugin
           gcloud components install gke-gcloud-auth-plugin
+
+          
   
       - name: Ensure gke-gcloud-auth-plugin is in PATH
         run: |
