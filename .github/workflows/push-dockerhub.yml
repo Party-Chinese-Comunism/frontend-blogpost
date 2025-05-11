@@ -2,91 +2,70 @@ on:
   push:
     branches:
       - main
-
+     
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  
-  GKE_CLUSTER: cluster-dev 
-  GKE_ZONE: us-central1  
-  DEPLOYMENT_NAME: blog-frontend  
-  IMAGE: frontend-blogpost 
+  PROJECT_ID: ${{ secrets.GCLOUD_PROJECT }}
+  GKE_CLUSTER: your-cluster-name
+  GKE_ZONE: us-central1
+  DEPLOYMENT_NAME: front
+  IMAGE: front
 
 jobs:
-  build-and-deploy:
-    name: Build, Push, and Deploy
+  build_and_deploy:
+    needs: test
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ github.ref }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # Checkout do código
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-      - name: env create
-        run: echo "${{ secrets.ENV }}" >> .env
-
+      # Configuração do Docker Buildx
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v1
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+      # Autenticação com Google Cloud e GKE
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          project_id: ${{ secrets.GCLOUD_PROJECT }}
+          credentials_json: '${{ secrets.GKE_SECRET }}'
+          install_components: 'gke-gcloud-auth-plugin'
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
-
-  deploy-to-gke:
-    needs: build-and-deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Configuração do Google Cloud e autenticação com a chave da conta de serviço
-      - name: Set up Google Cloud credentials
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}  # Chave da conta de serviço
-          project_id: ${{ secrets.GCP_PROJECT_ID }}  # ID do seu projeto
-
-      # Configure Docker para usar gcloud como helper de autenticação
-      - name: Configure Docker to use gcloud
+      # Instalação do gke-gcloud-auth-plugin (necessário para autenticação com GKE)
+      - name: Install gke-gcloud-auth-plugin
         run: |
-          gcloud --quiet auth configure-docker
+          sudo apt-get install -y apt-transport-https ca-certificates gnupg
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
+            sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+          curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+            sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
 
-      # Obter credenciais do GKE para o cluster
-      - uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_ZONE }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}  # Passando o project_id corretamente
-
-      # Build da imagem Docker
-      - name: Build Docker image
+      # Configuração do Docker para usar o gcloud como helper de autenticação
+      - name: Build Docker Image
         run: |
-          docker build \
-            --tag "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA" \
-            --build-arg GITHUB_SHA="$GITHUB_SHA" \
-            --build-arg GITHUB_REF="$GITHUB_REF" \
-            .
+          gcloud auth configure-docker us-central1-docker.pkg.dev
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/front/front:${GITHUB_SHA} .
+          docker push us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/front/front:${GITHUB_SHA}
 
-      # Publicar a imagem Docker no Google Container Registry
-      - name: Publish Docker image to GCR
+      # Deploy para o GKE
+      - name: Deploy to Kubernetes
         run: |
-          docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
-
-      # Deploy da imagem Docker no GKE
-      - name: Deploy to GKE
-        run: |
-          kubectl set image deployment/$DEPLOYMENT_NAME frontend=gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA --record
-          kubectl rollout status deployment/$DEPLOYMENT_NAME
-
-      # Verificação do status do deployment
-      - name: Verify the deployment
-        run: |
-          kubectl get services -o wide
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            # Configuração de credenciais para o cluster de produção
+            gcloud container clusters get-credentials production --zone us-central1 --project ${{ secrets.GCLOUD_PROJECT }}
+            
+            # Configuração do contexto para o cluster de produção
+            kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-central1_production
+            kubectl set image deployment/front front=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/front/front:${GITHUB_SHA}
+          elif [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+            # Configuração de credenciais para o cluster de desenvolvimento
+            gcloud container clusters get-credentials stage --zone us-central1 --project ${{ secrets.GCLOUD_PROJECT }}
+            
+            # Configuração do contexto para o cluster de desenvolvimento
+            kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-central1_stage
+            kubectl set image deployment/front front=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/front/front:${GITHUB_SHA}
+          fi
