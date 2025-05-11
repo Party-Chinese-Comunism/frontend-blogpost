@@ -59,10 +59,12 @@ jobs:
   
       - name: Configure kubectl to use cluster-dev
         run: |
-          gcloud container clusters get-credentials cluster-dev --zone ${{ secrets.GKE_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
+          # Usando a região armazenada em GKE_REGION para configurar o kubectl
+          gcloud container clusters get-credentials cluster-dev --region ${{ secrets.GKE_REGION }} --project ${{ secrets.GCP_PROJECT_ID }}
   
       - name: Deploy to GKE (update blog-frontend image)
         run: |
           kubectl set image deployment/blog-frontend frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
           kubectl rollout status deployment/blog-frontend
+
 
