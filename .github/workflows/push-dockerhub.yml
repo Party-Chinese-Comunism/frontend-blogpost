@@ -57,6 +57,11 @@ jobs:
           # Instalando o plugin gke-gcloud-auth-plugin
           gcloud components install gke-gcloud-auth-plugin
   
+      - name: Ensure gke-gcloud-auth-plugin is in PATH
+        run: |
+          echo "export PATH=$PATH:$HOME/google-cloud-sdk/bin" >> $GITHUB_ENV
+          source $HOME/google-cloud-sdk/path.bash.inc
+  
       - name: Configure kubectl to use cluster-dev
         run: |
           # Usando a região armazenada em GKE_REGION para configurar o kubectl
