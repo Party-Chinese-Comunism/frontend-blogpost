@@ -12,6 +12,7 @@ dist/
 .vercel
 .netlify
 .wrangler
+packge-lock.json
 
 # IDE
 .vscode/*
