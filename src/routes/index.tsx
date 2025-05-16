@@ -170,7 +170,7 @@ function HomeComponent() {
 
               <CardMedia
                 component="img"
-                image={"https://picsum.photos/1000"}
+                image={item?.image_url || noImage}
                 sx={{
                   width: "100%",
                   height: "auto",
