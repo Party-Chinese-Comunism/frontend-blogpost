@@ -88,5 +88,3 @@ jobs:
           kubectl patch deployment blog-frontend -n app \
             -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/arch":"amd64"}}}}}'
 
-          kubectl rollout restart deployment/blog-frontend -n frontend
-          kubectl rollout status deployment/blog-frontend -n frontend --timeout=120s
