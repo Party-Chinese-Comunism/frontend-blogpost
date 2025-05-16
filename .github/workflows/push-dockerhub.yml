@@ -82,11 +82,11 @@ jobs:
   
       - name: Deploy to Kubernetes
         run: |
-          kubectl set image deployment/blog-frontend -n frontend \
+          kubectl set image deployment/blog-frontend -n app \
             blog-frontend=${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:${{ steps.commit.outputs.SHORT_SHA }}
           
-          kubectl patch deployment blog-frontend -n frontend \
+          kubectl patch deployment blog-frontend -n app \
             -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/arch":"amd64"}}}}}'
 
-          kubectl rollout restart deployment/blog-frontend -n frontend
-          kubectl rollout status deployment/blog-frontend -n frontend --timeout=120s
+          kubectl rollout restart deployment/blog-frontend -n app
+          kubectl rollout status deployment/blog-frontend -n app --timeout=120s
