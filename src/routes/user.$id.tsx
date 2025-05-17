@@ -7,7 +7,7 @@ import { useUserById } from "../hooks/useUsers/useGetUserById";
 import { useState, useEffect } from "react";
 import { followUser } from "../service/user/user";
 import { changeProfilePicture } from "../service/profile/profile";
-import { useAuth } from "../context/auth"; 
+import { useAuth } from "../context/auth";
 
 export const Route = createFileRoute("/user/$id")({
   component: UserProfileComponent,
@@ -17,12 +17,12 @@ export default function UserProfileComponent() {
   const { id } = useParams({ strict: false }) as { id: string };
   const { data: userData, isLoading: userLoading, error: userError, refetch } = useUserById(id);
   const { data: postsData, isLoading: postsLoading, error: postsError } = useUserPosts(id);
-  const { user: currentUser } = useAuth(); 
+  const { user: currentUser } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [profileImage, setProfileImage] = useState<string>(userData?.user_image || "https://picsum.photos/100");
   const [hover, setHover] = useState(false);
-  const posts = postsData ?? []; 
-  const isCurrentUser = currentUser?.id.toString() === id; 
+  const posts = postsData ?? [];
+  const isCurrentUser = currentUser?.id.toString() === id;
 
   useEffect(() => {
     if (userData) {
@@ -77,8 +77,8 @@ export default function UserProfileComponent() {
   return (
     <Box sx={{ width: "100%", maxWidth: "800px", margin: "auto", padding: 2 }}>
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
-        
-                {isCurrentUser ? (
+
+        {isCurrentUser ? (
           <Box position="relative" display="inline-block">
             <label
               htmlFor="profile-upload"
@@ -90,9 +90,9 @@ export default function UserProfileComponent() {
               onMouseEnter={() => setHover(true)}
               onMouseLeave={() => setHover(false)}
             >
-              <Avatar 
-                src={profileImage} 
-                sx={{ width: 100, height: 100, border: "2px solid white" }} 
+              <Avatar
+                src={profileImage}
+                sx={{ width: 100, height: 100, border: "2px solid white" }}
               />
 
               {hover && (
@@ -124,9 +124,9 @@ export default function UserProfileComponent() {
             />
           </Box>
         ) : (
-          <Avatar 
-            src={profileImage} 
-            sx={{ width: 100, height: 100, border: "2px solid white" }} 
+          <Avatar
+            src={profileImage}
+            sx={{ width: 100, height: 100, border: "2px solid white" }}
           />
         )}
 
@@ -140,9 +140,9 @@ export default function UserProfileComponent() {
         </Box>
         {!isCurrentUser && (
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button 
-              variant={isFollowing ? "outlined" : "contained"} 
-              sx={{ textTransform: "none" }} 
+            <Button
+              variant={isFollowing ? "outlined" : "contained"}
+              sx={{ textTransform: "none" }}
               onClick={handleFollow}
             >
               {isFollowing ? "Seguindo" : "Seguir"}
@@ -155,21 +155,24 @@ export default function UserProfileComponent() {
       <Box sx={{ borderTop: "1px solid gray", mt: 3, pt: 2 }}>
         {posts?.length > 0 ? (
           <Grid container spacing={1}>
-  {posts.map((post, index) => (
-    <Grid item xs={4} sm={4} md={4} key={index}>
-      <Box
-        sx={{
-          width: "100%",
-          paddingTop: "100%",
-          position: "relative",
-          background: `url("https://picsum.photos/300") center/cover no-repeat`,
-          cursor: "pointer",
-          "&:hover": { opacity: 0.8 },
-        }}
-      />
-    </Grid>
-  ))}
-</Grid>
+            {posts.map((post, index) => (
+              <Grid item xs={4} sm={4} md={4} key={index}>
+                <Box
+                  sx={{
+                    width: "100%",
+                    paddingTop: "100%",
+                    position: "relative",
+                    backgroundImage: `url(${post.image_url})`,
+                    backgroundPosition: "center",
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    cursor: "pointer",
+                    "&:hover": { opacity: 0.8 },
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
         ) : (
           <Typography textAlign="center" width="100%" mt={2}>
             Nenhuma postagem encontrada.
