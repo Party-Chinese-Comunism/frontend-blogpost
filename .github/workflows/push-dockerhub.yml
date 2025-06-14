@@ -38,7 +38,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:${{ steps.commit.outputs.SHORT_SHA }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:novo
+            ${{ secrets.DOCKERHUB_USERNAME }}/frontend-blogpost:latest
 
   deploy:
     needs: build-and-push
@@ -76,7 +76,7 @@ jobs:
   
       - name: Configure kubectl
         run: |
-          gcloud container clusters get-credentials blog-cluster-east \
+          gcloud container clusters get-credentials cluster-prod-central \
             --region ${{ secrets.GKE_REGION_PROD }} \
             --project ${{ secrets.GCP_PROJECT_ID }}
   
