@@ -98,7 +98,7 @@ function RouteComponent() {
             sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
           >
 
-            LALA:)
+            N
           </Typography>
 
           <Box
