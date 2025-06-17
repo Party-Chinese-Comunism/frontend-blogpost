@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0  # Necessário para obter o commit hash completo
         
       - name: env create
-        run: echo "${{secrets.ENV_PROD}}" >> .env
+        run: echo "${{secrets.ENV}}" >> .env
         
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
